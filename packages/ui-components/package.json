@@ -1,0 +1,37 @@
+{
+  "name": "@uni-admin/ui-components",
+  "version": "0.0.1",
+  "description": "Business UI components library for uni-admin (based on Element Plus)",
+  "type": "module",
+  "main": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.js"
+    },
+    "./style": "./dist/style.css"
+  },
+  "scripts": {
+    "build": "tsup",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit"
+  },
+  "peerDependencies": {
+    "vue": "^3.4.0",
+    "element-plus": "^2.5.0"
+  },
+  "dependencies": {
+    "@uni-admin/shared-types": "workspace:*"
+  },
+  "devDependencies": {
+    "@vitejs/plugin-vue": "^5.0.0",
+    "tsup": "^8.0.0",
+    "typescript": "^5.3.0",
+    "vue": "^3.4.0"
+  },
+  "files": [
+    "dist"
+  ]
+}
