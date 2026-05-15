@@ -1,0 +1,1 @@
+{"import": "./src/seeders/*.seeder.ts", "seeders": ["RoleSeeder", "PermissionSeeder", "UserSeeder", "DictionarySeeder", "SystemConfigSeeder"]}

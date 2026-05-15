@@ -67,3 +67,28 @@ model Menu {
 
   @@map("menus")
 }
+
+// 字典模型
+model Dictionary {
+  id        Int      @id @default(autoincrement())
+  type      String   @map("type") @db.VarChar(50)
+  label     String   @map("label") @db.VarChar(100)
+  value     String   @map("value") @db.VarChar(255)
+  sort      Int      @default(0) @map("sort")
+  status    Int      @default(1) @map("status")
+  remark    String?  @map("remark") @db.Text
+
+  @@map("dictionary")
+}
+
+// 系统配置模型
+model SystemConfig {
+  id        Int      @id @default(autoincrement())
+  configKey String   @unique @map("config_key") @db.VarChar(100)
+  configValue String @map("config_value") @db.Text
+  groupName String   @map("group_name") @db.VarChar(50)
+  remark    String?  @map("remark") @db.Text
+  status    Int      @default(1) @map("status")
+
+  @@map("system_config")
+}

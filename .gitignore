@@ -34,6 +34,15 @@ yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
 
+# Uploads (临时上传文件)
+uploads/tmp/
+uploads/*.tmp
+
+# Database
+*.db
+*.sqlite
+*.sqlite3
+
 # Test coverage
 coverage/
 .nyc_output/
