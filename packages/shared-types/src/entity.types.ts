@@ -3,7 +3,8 @@
  * 对应数据库模型的 TypeScript 类型
  */
 
-import type { ID, Timestamps } from './common.types';
+import type { ID, Timestamps } from './common.types.js';
+import { UserStatus, EnumStatus, PermissionType } from './enums.js';
 
 /** 用户实体 */
 export interface IUser extends Timestamps {

@@ -1,15 +1,19 @@
 import { ref, unref } from 'vue';
-import type { FormInstance, FormRules } from 'element-plus';
+import type { FormInstance } from 'element-plus';
 
 /**
  * 表单组合式函数
  * 封装表单校验与提交逻辑
  */
 export function useForm<T extends Record<string, unknown> = Record<string, unknown>>(
-  initialValues?: Partial<T>
+  initialValues?: T
 ) {
   const formRef = ref<FormInstance | null>(null);
-  const model = ref<Partial<T>>({ ...initialValues } || {});
+  // 使用类型断言解决展开运算符的类型推断问题
+  const model = ref<Partial<T>>({} as Partial<T>);
+  if (initialValues) {
+    Object.assign(model.value, initialValues);
+  }
   const loading = ref(false);
 
   /**
@@ -30,7 +34,10 @@ export function useForm<T extends Record<string, unknown> = Record<string, unkno
    */
   const resetFields = () => {
     formRef.value?.resetFields();
-    model.value = { ...initialValues } || {};
+    model.value = {} as Partial<T>;
+    if (initialValues) {
+      Object.assign(model.value, initialValues);
+    }
   };
 
   /**

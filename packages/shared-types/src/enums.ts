@@ -23,6 +23,14 @@ export enum UserStatus {
   LOCKED = 'LOCKED',
 }
 
+/** 通用状态枚举（用于角色、权限、菜单等） */
+export enum EnumStatus {
+  /** 启用 */
+  ENABLED = 1,
+  /** 禁用 */
+  DISABLED = 0,
+}
+
 /** 权限类型枚举 */
 export enum PermissionType {
   /** 菜单权限 */

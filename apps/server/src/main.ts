@@ -16,7 +16,7 @@ async function bootstrap() {
   });
 
   // 全局验证管道
-  app.useGlobalPipe(
+  app.useGlobalPipes(
     new ValidationPipe({
       whitelist: true,
       forbidNonWhitelisted: true,

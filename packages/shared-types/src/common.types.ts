@@ -14,14 +14,6 @@ export interface Timestamps {
   updatedAt: Date | string;
 }
 
-/** 通用状态枚举：启用/禁用 */
-export enum EnumStatus {
-  /** 启用 */
-  ENABLED = 'ENABLED',
-  /** 禁用 */
-  DISABLED = 'DISABLED',
-}
-
 /** 下拉选项类型 */
 export interface OptionItem {
   /** 显示文本 */

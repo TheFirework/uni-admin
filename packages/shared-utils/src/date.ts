@@ -15,7 +15,7 @@ export function formatDate(date: Date | number | string, format = 'yyyy-MM-dd HH
     throw new Error('Invalid date');
   }
 
-  const map: Record<string, () => number | string> = {
+  const map: Record<string, () => string> = {
     yyyy: () => String(d.getFullYear()),
     MM: () => String(d.getMonth() + 1).padStart(2, '0'),
     dd: () => String(d.getDate()).padStart(2, '0'),

@@ -8,7 +8,33 @@
   <sub>通用化 · 标准化 · 权限完善 · 可快速二次开发</sub>
 </p>
 
----
+<p align="center">
+  <img src="https://img.shields.io/badge/version-0.0.1-blue" alt="version" />
+  <img src="https://img.shields.io/badge/node-%3E%3D18.x-green" alt="node" />
+  <img src="https://img.shields.io/badge/pnpm-%3E%3D8.x-red" alt="pnpm" />
+  <img src="https://img.shields.io/badge/license-MIT-yellow" alt="license" />
+</p>
+
+***
+
+## 📊 当前进度
+
+> **v0.0.1** - Monorepo 基础架构搭建完成 ✅ (2026-05-15)
+
+| 模块                  | 状态      | 说明                                                                        |
+| ------------------- | ------- | ------------------------------------------------------------------------- |
+| **Monorepo 基础设施**   | ✅ 完成    | pnpm workspace, TypeScript Project References, ESLint, Prettier           |
+| **shared-types 包**  | ✅ 完成    | API 类型、实体类型、通用类型、枚举定义                                                     |
+| **shared-utils 包**  | ✅ 完成    | 日期、字符串、格式化、验证、加密工具函数                                                      |
+| **ui-components 包** | ✅ 完成    | DataTable, SearchForm, ModalForm 组件 + useDataTable/useForm/useModal hooks |
+| **NestJS Server**   | ✅ 初始化完成 | 项目结构、CORS、ValidationPipe、Swagger 配置                                       |
+| **Vue3 Web**        | ✅ 初始化完成 | Vite + Element Plus + Pinia + Router + API 层                              |
+| **Docker 环境**       | ✅ 完成    | MySQL 8.0 + Redis 7.0 + Dockerfile.server/web                             |
+| **Prisma Schema**   | ✅ 完成    | User, Role, Permission, Menu 数据模型                                         |
+| **单元测试**            | ⏳ 待开发   | Vitest 配置已就绪，测试用例待编写                                                      |
+| **RBAC 权限系统**       | ⏳ 开发中   | 用户/角色/权限/菜单管理模块                                                           |
+
+***
 
 ## ✨ 特性
 
@@ -87,25 +113,29 @@ pnpm dev
 
 ### 访问地址
 
-| 服务 | 地址 | 说明 |
-|------|------|------|
-| 前端 | http://localhost:5173 | Vue3 开发服务器 |
-| 后端 API | http://localhost:3000 | NestJS 服务 |
-| Swagger 文档 | http://localhost:3000/api/docs | API 文档（仅开发环境） |
-| MySQL | localhost:3306 | 数据库 |
-| Redis | localhost:6379 | 缓存 |
+| 服务         | 地址                               | 说明            |
+| ---------- | -------------------------------- | ------------- |
+| 前端         | <http://localhost:5173>          | Vue3 开发服务器    |
+| 后端 API     | <http://localhost:3000>          | NestJS 服务     |
+| Swagger 文档 | <http://localhost:3000/api/docs> | API 文档（仅开发环境） |
+| MySQL      | localhost:3306                   | 数据库           |
+| Redis      | localhost:6379                   | 缓存            |
 
 ## 📦 核心包介绍
 
 ### @uni-admin/shared-types
+
 前后端共享的 TypeScript 类型定义：
+
 - API 请求/响应类型（ApiResponse, PaginatedResponse）
 - 实体类型（IUser, IRole, IPermission, IMenu）
 - 公共类型（ID, Timestamps, EnumStatus）
 - 枚举常量（UserRole, UserStatus, PermissionType）
 
 ### @uni-admin/shared-utils
+
 通用工具函数库：
+
 - `date.ts`: 日期处理（formatDate, getRelativeTime, getDateRange）
 - `string.ts`: 字符串操作（camelize, snakeize, truncate）
 - `format.ts`: 数据格式化（formatFileSize, formatNumber, maskSensitiveData）
@@ -113,7 +143,9 @@ pnpm dev
 - `crypto.ts`: 加密工具（md5, sha256, base64）
 
 ### @uni-admin/ui-components
+
 基于 Element Plus 的业务组件库：
+
 - `DataTable`: 通用数据表格（分页、排序、多选）
 - `SearchForm`: 搜索表单
 - `ModalForm`: 弹窗表单
@@ -149,6 +181,7 @@ pnpm clean            # 删除 dist 和 node_modules
 ## 🏗️ 技术栈
 
 **前端**:
+
 - Vue 3.4+ (Composition API)
 - Vite 5.0+
 - Pinia (状态管理)
@@ -158,6 +191,7 @@ pnpm clean            # 删除 dist 和 node_modules
 - SCSS (样式预处理器)
 
 **后端**:
+
 - Node.js 20+
 - NestJS 10.x
 - Prisma (ORM)
@@ -165,10 +199,12 @@ pnpm clean            # 删除 dist 和 node_modules
 - Swagger/OpenAPI (API 文档)
 
 **数据存储**:
+
 - MySQL 8.0 (主数据库)
 - Redis 7 (缓存)
 
 **工程化**:
+
 - pnpm (包管理器)
 - TypeScript 5.3+ (严格模式)
 - ESLint + Prettier (代码质量)
@@ -180,12 +216,12 @@ pnpm clean            # 删除 dist 和 node_modules
 
 项目遵循统一的命名规范：
 
-| 层级 | 规范 | 示例 |
-|------|------|------|
-| Package Name | `@uni-admin/<kebab-case>` | @uni-admin/server |
-| Directory | 小写复数 / kebab-case | components/, shared-types/ |
-| File | PascalCase (组件) / kebab-case (工具) | DataTable.vue, date-utils.ts |
-| Code | PascalCase (类) / camelCase (函数) / UPPER_SNAKE_CASE (常量) | UserService, getUserById |
+| 层级           | 规范                                                        | 示例                           |
+| ------------ | --------------------------------------------------------- | ---------------------------- |
+| Package Name | `@uni-admin/<kebab-case>`                                 | @uni-admin/server            |
+| Directory    | 小写复数 / kebab-case                                         | components/, shared-types/   |
+| File         | PascalCase (组件) / kebab-case (工具)                         | DataTable.vue, date-utils.ts |
+| Code         | PascalCase (类) / camelCase (函数) / UPPER\_SNAKE\_CASE (常量) | UserService, getUserById     |
 
 详见 [OpenSpec 设计文档](./openspec/changes/setup-pnpm-monorepo-structure/)。
 

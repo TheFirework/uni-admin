@@ -1,0 +1,69 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "mysql"
+  url      = env("DATABASE_URL")
+}
+
+// 用户模型
+model User {
+  id        Int       @id @default(autoincrement())
+  username  String    @unique @map("username") @db.VarChar(50)
+  email     String    @unique @map("email") @db.VarChar(100)
+  nickname  String?   @map("nickname") @db.VarChar(50)
+  avatar    String?   @map("avatar") @db.VarChar(255)
+  roleIds   String?   @map("role_ids") @db.Text
+  status    Int       @default(1) @map("status") // 0: 禁用, 1: 启用
+  password  String    @map("password") @db.VarChar(255)
+  createdAt DateTime  @default(now()) @map("created_at")
+  updatedAt DateTime  @updatedAt @map("updated_at")
+
+  @@map("users")
+}
+
+// 角色模型
+model Role {
+  id          Int      @id @default(autoincrement())
+  name        String   @unique @map("name") @db.VarChar(50)
+  code        String   @unique @map("code") @db.VarChar(50)
+  description String?  @map("description") @db.VarChar(255)
+  permissions String?  @map("permissions") @db.Text
+  status      Int      @default(1) @map("status")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt @map("updated_at")
+
+  @@map("roles")
+}
+
+// 权限模型
+model Permission {
+  id       Int     @id @default(autoincrement())
+  name     String  @unique @map("name") @db.VarChar(100)
+  code     String  @unique @map("code") @db.VarChar(100)
+  type     Int     @map("type") // 0: 菜单, 1: 按钮, 2: API
+  resource String? @map("resource") @db.VarChar(100)
+  action   String? @map("action") @db.VarChar(50)
+  status   Int     @default(1) @map("status")
+
+  @@map("permissions")
+}
+
+// 菜单模型
+model Menu {
+  id        Int      @id @default(autoincrement())
+  parentId  Int?     @map("parent_id")
+  name      String   @map("name") @db.VarChar(50)
+  path      String?  @map("path") @db.VarChar(255)
+  icon      String?  @map("icon") @db.VarChar(50)
+  component String?  @map("component") @db.VarChar(255)
+  sort      Int      @default(0) @map("sort")
+  visible   Boolean  @default(true) @map("visible")
+  status    Int      @default(1) @map("status")
+
+  @@map("menus")
+}
