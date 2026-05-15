@@ -1,1 +1,29 @@
-{"extends": "../../tsconfig.base.json", "compilerOptions": {"outDir": "./dist", "rootDir": "./src", "composite": true, "declaration": true, "jsx": "preserve"}, "references": [{"path": "../../packages/shared-types"}, {"path": "../../packages/shared-utils"}, {"path": "../../packages/ui-components"}], "include": ["src/**/*.ts", "src/**/*.vue"], "exclude": ["node_modules", "dist"]}
+{
+  "extends": "../../tsconfig.base.json",
+  "compilerOptions": {
+    "outDir": "./dist",
+    "rootDir": "./src",
+    "composite": true,
+    "declaration": true,
+    "jsx": "preserve"
+  },
+  "references": [
+    {
+      "path": "../../packages/shared-types"
+    },
+    {
+      "path": "../../packages/shared-utils"
+    },
+    {
+      "path": "../../packages/ui-components"
+    }
+  ],
+  "include": [
+    "src/**/*.ts",
+    "src/**/*.vue"
+  ],
+  "exclude": [
+    "node_modules",
+    "dist"
+  ]
+}

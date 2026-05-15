@@ -5,14 +5,18 @@ import 'element-plus/dist/index.css';
 
 import App from './App.vue';
 import router from './router/index.js';
+import { env } from './utils/env.config';
 
-// 创建 Vue 应用实例
 const app = createApp(App);
 
-// 注册插件
 app.use(createPinia());
 app.use(router);
 app.use(ElementPlus);
 
-// 挂载应用
+if (env.enableMock) {
+  import('./mocks/browser.js').then(({ worker }) => {
+    worker.start({ onUnhandledRequest: 'bypass' });
+  }).catch(() => { });
+}
+
 app.mount('#app');

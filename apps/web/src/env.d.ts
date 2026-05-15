@@ -1,20 +1,23 @@
 /// <reference types="vite/client" />
 
-// 声明 .vue 文件模块
-declare module '*.vue' {
-  import type { DefineComponent } from 'vue'
-  const component: DefineComponent<object, object, unknown>
-  export default component
+interface ImportMetaEnv {
+  // ====== 应用基础配置 ======
+  readonly VITE_APP_TITLE: string;
+  readonly VITE_APP_ENV: 'development' | 'test' | 'production';
+
+  // ====== API 服务配置 ======
+  readonly VITE_API_BASE_URL: string;
+  readonly VITE_API_TIMEOUT: string;
+
+  // ====== 功能开关 ======
+  readonly VITE_ENABLE_MOCK: string;
+  readonly VITE_ENABLE_DEVTOOLS: string;
+
+  // ====== 构建元数据（由 vite.config.ts define 注入） ======
+  readonly VITE_BUILD_VERSION: string;
+  readonly VITE_BUILD_TIME: string;
 }
 
-// 扩展 ImportMeta 接口以支持 Vite 环境变量
 interface ImportMeta {
-  readonly env: {
-    readonly VITE_APP_TITLE: string
-    readonly VITE_API_BASE_URL: string
-    [key: string]: string | boolean | number | undefined
-  }
+  readonly env: ImportMetaEnv;
 }
-
-// 使用 var 声明全局 window 对象（兼容性更好）
-declare var window: Window & typeof globalThis
