@@ -414,4 +414,9 @@
   - ✅ 新增"本版本新增功能"详细说明章节
   - ✅ 更新特性列表、技术栈、常用命令、访问地址
   - ✅ 添加默认账号信息和安全提示
-- [ ] 14.4 提交代码并创建清晰的 commit message（遵循 Conventional Commits 规范）⚠️ 需要用户明确要求
+- [x] 14.4 提交代码并创建清晰的 commit message（遵循 Conventional Commits 规范）✅ **已完成**
+  - ✅ Commit Hash: `2a4c18f`
+  - ✅ Message: `feat(setup): implement base dependency services - JWT auth, Redis cache, Bull queues, Winston logging, Knex data access, Zod validation, seed system, Web tooling`
+  - ✅ Files Changed: **90 files**, +13,188 lines, -45 lines
+  - ✅ Conventional Commits 格式: `feat(setup): <description>`
+  - ✅ 包含 BREAKING CHANGE 说明（Cookie 路径变更）
