@@ -1,0 +1,35 @@
+schema: spec-driven
+
+# Project context (optional)
+# This is shown to AI when creating artifacts.
+# Add your tech stack, conventions, style guides, domain knowledge, etc.
+# Example:
+#   context: |
+#     Tech stack: TypeScript, React, Node.js
+#     We use conventional commits
+#     Domain: e-commerce platform
+
+# Per-artifact rules (optional)
+# Add custom rules for specific artifacts.
+# Example:
+#   rules:
+#     proposal:
+#       - Keep proposals under 500 words
+#       - Always include a "Non-goals" section
+#     tasks:
+#       - Break tasks into chunks of max 2 hours
+
+context: |
+  Tech stack: TypeScript, Vue, Node.js, nestjs, prisma, mysql, redis, pinia , element-plus, vite, monorepo, docker,tailwindcss
+  API conventions: RESTful, JSON responses
+  Testing: Vitest for unit tests, Playwright for e2e
+  Style: ESLint with Prettier, strict TypeScript
+
+rules:
+  proposal:
+    - Include rollback plan
+    - Identify affected teams
+  specs:
+    - Use Given/When/Then format for scenarios
+  design:
+    - Include sequence diagrams for complex flows
