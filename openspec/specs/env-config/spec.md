@@ -14,7 +14,7 @@
 - **WHEN** 在 Vite 构建的 Web 应用中导入 `{ env } from './utils/env.config'`
 - **THEN** 模块从 `import.meta.env` 读取以 `VITE_` 为前缀的变量
 - **THEN** 模块在 import 时立即执行校验，导出 `export const env: Readonly<WebEnvConfig>`
-- **THEN** 返回的 `env` 对象包含：`appTitle`, `appEnv`, `apiBaseUrl`, `apiTimeout`, `enableMock`, `enableDevtools`, `buildVersion`, `buildTime`
+- **THEN** 返回的 `env` 对象包含：`appTitle`, `appEnv`, `apiBaseUrl`, `apiTimeout`, `enableDevtools`, `buildVersion`, `buildTime`
 
 #### Scenario: Server 独立模块通过 Zod Schema + getConfig() 读取
 - **WHEN** 在 NestJS Server 应用中调用 `import { getConfig } from './config/env.config.js'; const config = getConfig()`
@@ -65,7 +65,7 @@
 
 #### Scenario: Web 端 IDE 完整类型补全
 - **WHEN** 在 Web 代码中导入 `{ env } from './utils/env.config'` 并输入 `env.`
-- **THEN** IDE 显示所有 WebEnvConfig 属性：`appTitle`, `appEnv`, `apiBaseUrl`, `apiTimeout`, `enableMock`, `enableDevtools`, `buildVersion`, `buildTime`
+- **THEN** IDE 显示所有 WebEnvConfig 属性：`appTitle`, `appEnv`, `apiBaseUrl`, `apiTimeout`, `enableDevtools`, `buildVersion`, `buildTime`
 
 #### Scenario: Server 端 IDE 完整类型补全（Zod infer）
 - **WHEN** 在 Server 代码中调用 `getConfig()` 后访问 `config.`
@@ -288,9 +288,9 @@ ConfigModule.forRoot() SHALL 保持现有的多环境文件加载策略不变：
 
 ### Requirement: 功能开关控制（双端）
 
-#### Scenario: Web 端 Mock / DevTools 开关
-- **WHEN** `VITE_ENABLE_MOCK=true`
-- **THEN** `env.enableMock` 为 `true`
+#### Scenario: Web 端 DevTools 开关
+- **WHEN** `VITE_ENABLE_DEVTOOLS=true`
+- **THEN** `env.enableDevtools` 为 `true`
 - **WHEN** 生产环境中 `VITE_ENABLE_DEVTOOLS=true`
 - **THEN** `env.enableDevtools` 强制为 `false`
 
@@ -310,7 +310,7 @@ ConfigModule.forRoot() SHALL 保持现有的多环境文件加载策略不变：
 
 #### Scenario: Web main.ts 集成
 - **WHEN** `apps/web/src/main.ts` 导入 `{ env } from './utils/env.config'`
-- **THEN** 触发即时校验；根据 `env.enableDevtools` 加载 DevTools；根据 `env.enableMock` 加载 MSW
+- **THEN** 触发即时校验；根据 `env.enableDevtools` 加载 DevTools
 
 #### Scenario: Server main.ts 集成（顶层 import getConfig）
 - **WHEN** `apps/server/src/main.ts` 顶层导入 `import { getConfig } from './config/env.config.js'` 并调用 `const config = getConfig()`
