@@ -28,7 +28,8 @@ import {
 } from '@nestjs/common';
 import type { Knex } from 'knex';
 import knex from 'knex';
-import { knexConfig } from '../../config/knex.config';
+import { createKnexConfig } from '../../config/knex.config.js';
+import { getConfig } from '../../config/env.config.js';
 
 // ==================== Injection Token ====================
 // 使用 Symbol 作为 token，避免字符串冲突，提升类型安全性
@@ -127,7 +128,7 @@ export class KnexModule {
     const knexInstance =
       options?.config && 'raw' in options.config
         ? (options.config as Knex)
-        : knex(options?.config || knexConfig);
+        : knex(options?.config || createKnexConfig(getConfig()));
 
     // 注册到 IoC 容器的 Provider 列表
     const providers: Provider[] = [
@@ -223,4 +224,4 @@ export class KnexModule {
  *   - 在正常的 NestJS 服务/控制器中，应优先使用 @Inject(KNEX_CONNECTION)
  *   - 此实例不会参与 NestJS 的生命周期管理
  */
-export const defaultKnex = knex(knexConfig);
+export const defaultKnex = knex(createKnexConfig(getConfig()));

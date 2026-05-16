@@ -21,7 +21,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
 
       // 使用环境变量中的 JWT_SECRET 作为签名密钥
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key-change-in-production',
+      secretOrKey: configService.get<string>('JWT_SECRET')!,
     });
   }
 

@@ -14,6 +14,7 @@
  */
 
 import * as crypto from 'crypto';
+import { getConfig } from '../../config/env.config.js';
 
 // ====== 常量定义 ======
 
@@ -80,10 +81,7 @@ export class CryptoUtil {
    * @returns 32字节长度的密钥字符串
    */
   private static getEncryptionKey(): string {
-    return (
-      process.env.ENCRYPTION_KEY ||
-      'default-encryption-key-32-characters-long!!'
-    );
+    return getConfig().encryptionKey;
   }
 
   /**
@@ -93,10 +91,8 @@ export class CryptoUtil {
    * @returns 签名使用的密钥字符串
    */
   private static getSigningKey(): string {
-    return (
-      process.env.HMAC_SECRET ||
-      CryptoUtil.getEncryptionKey()
-    );
+    const config = getConfig();
+    return config.hmacSecret || config.encryptionKey;
   }
 
   // ====== AES 加解密方法 ======

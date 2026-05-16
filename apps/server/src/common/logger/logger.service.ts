@@ -13,7 +13,7 @@
 
 import { Injectable, LoggerService as NestLoggerService } from '@nestjs/common';
 import { createLogger, format, transports, Logger } from 'winston';
-import { getEnv } from '../../config/env.config.js';
+import { getConfig } from '../../config/env.config.js';
 
 /** 结构化日志元数据接口 */
 export interface LogMetadata {
@@ -36,9 +36,9 @@ export interface LogMetadata {
  * 开发环境使用彩色控制台输出，生产环境使用 JSON 格式
  */
 function buildLogFormat() {
-  const env = getEnv();
+  const config = getConfig();
 
-  if (env.appEnv === 'production') {
+  if (config.appEnv === 'production') {
     // 生产环境：纯 JSON 格式，便于 ELK/日志平台采集解析
     return format.combine(
       format.timestamp({ format: 'YYYY-MM-DD HH:mm:ss.SSS' }),
@@ -65,22 +65,21 @@ export class LoggerService implements NestLoggerService {
   private readonly logger: Logger;
 
   constructor() {
-    const env = getEnv();
+    const config = getConfig();
+    const isProduction = config.appEnv === 'production';
 
     this.logger = createLogger({
-      level: env.appEnv === 'development' ? 'debug' : 'info',
+      level: isProduction ? 'info' : 'debug',
       format: buildLogFormat(),
       defaultMeta: { service: 'uni-admin-server' },
       transports: [
-        // 控制台输出（始终开启）
         new transports.Console(),
-        // 生产环境额外写入文件
-        ...(env.appEnv === 'production'
+        ...(isProduction
           ? [
               new transports.File({
                 filename: 'logs/app-error.log',
                 level: 'error',
-                maxsize: 5242880, // 5MB
+                maxsize: 5242880,
                 maxFiles: 5,
               }),
               new transports.File({
@@ -92,14 +91,14 @@ export class LoggerService implements NestLoggerService {
           : []),
       ],
     exceptionHandlers:
-      env.appEnv === 'production'
+      isProduction
         ? [new transports.File({ filename: 'logs/app-exceptions.log' })]
         : undefined,
     rejectionHandlers:
-      env.appEnv === 'production'
+      isProduction
         ? [new transports.File({ filename: 'logs/app-rejections.log' })]
         : undefined,
-  });
+    });
   }
 
   /**

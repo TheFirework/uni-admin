@@ -42,8 +42,9 @@
  *   - 定期扫描：使用 Redis --bigkeys 工具发现 BigKey
  *   - 最佳实践：控制单个 Value 在 1KB 以内，List/Hash 元素 < 5000
  */
-import { Injectable, Logger } from '@nestjs/common';
-import type { Cache } from 'cache-manager';  // 使用 import type，避免装饰器签名中的类型引用问题
+import { Injectable, Logger, Inject } from '@nestjs/common';
+import { CACHE_MANAGER } from '@nestjs/cache-manager';
+import type { Cache } from 'cache-manager';
 
 // ====== 类型定义 ======
 
@@ -97,7 +98,7 @@ export class RedisCacheService {
    *
    * @param cacheManager - cache-manager 的 Cache 实例（由 CacheModule 提供）
    */
-  constructor(private readonly cacheManager: any) {}  // 使用 any 类型，避免 cache-manager 版本兼容性问题
+  constructor(@Inject(CACHE_MANAGER) private readonly cacheManager: Cache) {}
 
   // ===================================================================
   // 基础缓存操作（基于 Cache 接口封装）
@@ -186,9 +187,9 @@ export class RedisCacheService {
    */
   async reset(): Promise<void> {
     try {
-      // cache-manager v7+ 可能不支持 reset 方法，尝试调用或回退
-      if (typeof this.cacheManager.reset === 'function') {
-        await this.cacheManager.reset();
+      const cacheAny = this.cacheManager as any;
+      if (typeof cacheAny.reset === 'function') {
+        await cacheAny.reset();
       } else {
         this.logger.warn('[Cache RESET] 当前 cache-manager 版本不支持 reset 方法');
       }

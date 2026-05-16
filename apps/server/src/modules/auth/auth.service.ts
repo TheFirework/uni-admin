@@ -206,7 +206,7 @@ export class AuthService {
     let payload: JwtPayload;
     try {
       payload = await this.jwtService.verifyAsync<JwtPayload>(refreshToken, {
-        secret: this.configService.get<string>('JWT_SECRET'),
+        secret: this.configService.get<string>('JWT_SECRET')!,
       });
     } catch (error) {
       throw new UnauthorizedException('RefreshToken 已过期或无效，请重新登录');
@@ -328,8 +328,8 @@ export class AuthService {
 
     // 使用 as any 绕过 expiresIn 类型检查（@nestjs/jwt 类型定义过于严格）
     return this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
-      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') || '15m',
+      secret: this.configService.get<string>('JWT_SECRET')!,
+      expiresIn: this.configService.get<string>('JWT_EXPIRES_IN') ?? '15m',
     } as any);
   }
 
@@ -358,7 +358,7 @@ export class AuthService {
 
     // 使用 as any 绕过 expiresIn 类型检查
     return this.jwtService.sign(payload, {
-      secret: this.configService.get<string>('JWT_SECRET'),
+      secret: this.configService.get<string>('JWT_SECRET')!,
       expiresIn: '7d', // RefreshToken 固定7天有效期
     } as any);
   }
@@ -418,7 +418,7 @@ export class AuthService {
    * @returns 过期时间（秒）
    */
   private getAccessTokenExpiresIn(): number {
-    const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN') || '15m';
+    const expiresIn = this.configService.get<string>('JWT_EXPIRES_IN') ?? '15m';
 
     // 解析时间字符串为秒数
     const match = expiresIn.match(/^(\d+)([smhd])$/);

@@ -6,6 +6,7 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 // 导入认证模块的各个组件
 import { AuthService } from './auth.service.js';
 import { AuthController } from './auth.controller.js';
+import { RedisCacheService } from '../../common/cache/redis-cache.service.js';
 
 // 导入 Passport 策略
 import { JwtStrategy } from './strategies/jwt.strategy.js';
@@ -94,10 +95,9 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy.js';
       inject: [ConfigService],          // 注入 ConfigService
       useFactory: async (configService: ConfigService) => {
         // 从环境变量获取 JWT 密钥（必须与客户端保持一致）
-        const secret = configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key-change-in-production';
+        const secret = configService.get<string>('JWT_SECRET')!;
 
-        // 获取 Token 有效期配置
-        const expiresIn = configService.get<string>('JWT_EXPIRES_IN') || '15m';
+        const expiresIn = configService.get<string>('JWT_EXPIRES_IN') ?? '15m';
 
         return {
           secret,
@@ -121,6 +121,7 @@ import { RefreshTokenStrategy } from './strategies/refresh-token.strategy.js';
     AuthService,            // 核心认证服务（登录、刷新、登出）
     JwtStrategy,            // AccessToken 验证策略
     RefreshTokenStrategy,   // RefreshToken 验证策略
+    RedisCacheService,      // Redis 缓存服务（RefreshToken 存储）
   ],
 
   /**

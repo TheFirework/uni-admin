@@ -41,7 +41,7 @@ export class RefreshTokenStrategy extends PassportStrategy(Strategy, 'jwt-refres
       ]),
 
       // 使用独立的密钥或与 AccessToken 相同的密钥
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'your-super-secret-jwt-key-change-in-production',
+      secretOrKey: configService.get<string>('JWT_SECRET')!,
 
       // 不检查过期时间，因为 RefreshToken 可能已过期但仍在有效期内用于刷新
       ignoreExpiration: false,

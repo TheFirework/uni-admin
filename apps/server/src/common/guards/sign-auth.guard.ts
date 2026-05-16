@@ -27,7 +27,7 @@ import {
 import { Reflector } from '@nestjs/core';
 import { Request } from 'express';
 import { createHmac, timingSafeEqual } from 'node:crypto';
-import { getEnv } from '../../config/env.config.js';
+import { getConfig } from '../../config/env.config.js';
 
 /** 签名相关 Header 名称常量 */
 const SIGN_HEADER = 'x-sign' as const;
@@ -213,7 +213,7 @@ export class SignAuthGuard implements CanActivate {
     timestamp: string,
     nonce: string
   ): string {
-    const env = getEnv();
+    const config = getConfig();
     const method = request.method.toUpperCase();
     const url = request.originalUrl || request.url;
 
@@ -234,7 +234,7 @@ export class SignAuthGuard implements CanActivate {
     const signString = [method, url, timestamp, nonce, bodyHash].join('\n');
 
     // HMAC-SHA256 签名（输出十六进制小写）
-    return createHmac('sha256', env.jwtSecret)
+    return createHmac('sha256', config.jwtSecret)
       .update(signString)
       .digest('hex');
   }

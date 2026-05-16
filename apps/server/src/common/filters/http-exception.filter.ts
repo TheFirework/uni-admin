@@ -26,7 +26,7 @@ import {
 } from '@nestjs/common';
 import { Request, Response } from 'express';
 import { ValidationError } from 'class-validator';
-import { getEnv } from '../../config/env.config.js';
+import { getConfig } from '../../config/env.config.js';
 import { LoggerService as AppLoggerService } from '../logger/logger.service.js';
 
 /** 统一错误响应体结构 */
@@ -77,7 +77,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const ctx = host.switchToHttp();
     const response = ctx.getResponse<Response>();
     const request = ctx.getRequest<Request>();
-    const env = getEnv();
+    const config = getConfig();
 
     let status: HttpStatus;
     let errorResponse: ErrorResponse;
@@ -109,7 +109,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     // ====== 分支 3: 未知异常（兜底） ======
     else {
       status = HttpStatus.INTERNAL_SERVER_ERROR;
-      errorResponse = this.handleUnknownError(exception, request, env.appEnv);
+      errorResponse = this.handleUnknownError(exception, request, config.appEnv);
 
       // 未知异常必须记录完整堆栈
       this.logger.error(`[UnknownError] ${request.method} ${request.url}`, {
