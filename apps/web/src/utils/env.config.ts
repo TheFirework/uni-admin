@@ -12,7 +12,6 @@ export interface WebEnvConfig {
   appEnv: AppEnv;
   apiBaseUrl: string;
   apiTimeout: number;
-  enableMock: boolean;
   enableDevtools: boolean;
   buildVersion: string;
   buildTime: string;
@@ -79,7 +78,6 @@ function validateEnv(): WebEnvConfig {
 
   // 生产环境强制关闭功能开关
   const isProduction = appEnv === 'production';
-  const enableMock = isProduction ? false : parseBoolean(meta.VITE_ENABLE_MOCK);
   const enableDevtools = isProduction ? false : parseBoolean(meta.VITE_ENABLE_DEVTOOLS);
 
   return Object.freeze({
@@ -87,7 +85,6 @@ function validateEnv(): WebEnvConfig {
     appEnv,
     apiBaseUrl: meta.VITE_API_BASE_URL || '/api/v1',
     apiTimeout,
-    enableMock,
     enableDevtools,
     buildVersion: meta.VITE_BUILD_VERSION || '0.0.0',
     buildTime: meta.VITE_BUILD_TIME || new Date().toISOString(),

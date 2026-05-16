@@ -10,7 +10,6 @@ interface ImportMetaEnv {
   readonly VITE_API_TIMEOUT: string;
 
   // ====== 功能开关 ======
-  readonly VITE_ENABLE_MOCK: string;
   readonly VITE_ENABLE_DEVTOOLS: string;
 
   // ====== 构建元数据（由 vite.config.ts define 注入） ======
