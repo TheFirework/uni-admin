@@ -20,6 +20,7 @@
     "@uni-admin/shared-types": "workspace:*",
     "@uni-admin/shared-utils": "workspace:*",
     "@uni-admin/ui-components": "workspace:*",
+    "@vee-validate/zod": "^4.15.1",
     "@vueuse/core": "^14.3.0",
     "axios": "^1.6.5",
     "dayjs": "^1.11.20",

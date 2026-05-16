@@ -27,6 +27,8 @@ interface InternalMetadata {
   cacheTtl?: number;
   /** 业务成功码列表 */
   successCodes: number[];
+  /** 是否跳过 401 认证跳转（如登录接口的 401 是业务错误） */
+  skipAuthRedirect?: boolean;
 }
 
 export function createConfigMergeMiddleware(
@@ -55,6 +57,7 @@ export function createConfigMergeMiddleware(
       pageKey: merged.pageKey,
       cacheTtl: merged.cacheTtl,
       successCodes: merged.successCodes ?? [200, 0],
+      skipAuthRedirect: merged.skipAuthRedirect,  // 是否跳过 401 认证跳转
     };
 
     // 将合并后的配置和内部元数据写回上下文

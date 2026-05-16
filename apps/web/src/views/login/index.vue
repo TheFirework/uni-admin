@@ -1,111 +1,206 @@
 <template>
-  <div class="login-container">
-    <div class="login-card">
-      <h2 class="login-title">Uni-Admin 管理后台</h2>
-      <p class="login-subtitle">统一管理平台</p>
+  <div class="login-page">
+    <!-- 左侧品牌展示区 -->
+    <BrandSection />
 
-      <el-form ref="formRef" :model="loginForm" :rules="rules" size="large">
-        <el-form-item prop="username">
-          <el-input
-            v-model="loginForm.username"
-            placeholder="请输入用户名"
-            prefix-icon="User"
-          />
-        </el-form-item>
-
-        <el-form-item prop="password">
-          <el-input
-            v-model="loginForm.password"
-            type="password"
-            placeholder="请输入密码"
-            prefix-icon="Lock"
-            show-password
-            @keyup.enter="handleLogin"
-          />
-        </el-form-item>
-
-        <el-form-item>
-          <el-button
-            type="primary"
-            :loading="loading"
-            style="width: 100%"
-            @click="handleLogin"
-          >
-            登 录
-          </el-button>
-        </el-form-item>
-      </el-form>
-    </div>
+    <!-- 右侧登录表单区 -->
+    <main class="login-form-section">
+      <div class="login-container">
+        <!-- 登录卡片（核心组件） -->
+        <LoginCard :show-captcha="showCaptcha" :loading="loading" :captcha-image="captchaImage"
+          :captcha-loading="captchaLoading" @submit="handleSubmit" @captcha-refresh="handleRefreshCaptcha"
+          @forgot-password="handleForgotPassword" />
+      </div>
+    </main>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, reactive } from 'vue';
-import { useRouter } from 'vue-router';
+import { ref, onMounted } from 'vue';
+import { useRouter, useRoute } from 'vue-router';
 import { ElMessage } from 'element-plus';
-import type { FormInstance, FormRules } from 'element-plus';
 
+// 子组件
+import BrandSection from './components/BrandSection.vue';
+import LoginCard from './components/LoginCard.vue';
+
+// API 和 Store
+import { useAuthStore } from '@/stores/auth.store';
+import * as authApi from '@/api/modules/auth.api';
+
+/**
+ * 登录页面主组件
+ *
+ * 职责：
+ * - 组合 BrandSection + LoginCard 子组件
+ * - 管理业务状态（验证码、错误处理）
+ * - 协调 API 调用和路由跳转
+ */
 const router = useRouter();
-const formRef = ref<FormInstance>();
+const route = useRoute();
+const authStore = useAuthStore();
+
+// ========== 响应式状态 ==========
+
+/** 是否显示验证码区域 */
+const showCaptcha = ref(false);
+
+/** 验证码图片 URL */
+const captchaImage = ref('');
+
+/** 验证码唯一标识 */
+const captchaKey = ref('');
+
+/** 验证码加载状态 */
+const captchaLoading = ref(false);
+
+/** 表单提交 loading 状态 */
 const loading = ref(false);
 
-const loginForm = reactive({
-  username: '',
-  password: '',
-});
+/** 登录失败计数（用于触发验证码显示） */
+const failCount = ref(0);
 
-const rules: FormRules = {
-  username: [{ required: true, message: '请输入用户名', trigger: 'blur' }],
-  password: [{ required: true, message: '请输入密码', trigger: 'blur' }],
+// ========== 业务方法 ==========
+
+/**
+ * 加载验证码图片
+ */
+const loadCaptcha = async () => {
+  captchaLoading.value = true;
+  try {
+    const result = await authApi.getCaptcha();
+    captchaImage.value = result.captchaImage;
+    captchaKey.value = result.captchaKey;
+  } catch (error) {
+    console.error('[Login] 加载验证码失败:', error);
+    ElMessage.warning('验证码加载失败，请稍后重试');
+  } finally {
+    captchaLoading.value = false;
+  }
 };
 
-const handleLogin = async () => {
-  const valid = await formRef.value?.validate().catch(() => false);
-  if (!valid) return;
+/**
+ * 点击刷新验证码
+ */
+const handleRefreshCaptcha = () => {
+  loadCaptcha();
+};
+
+/**
+ * 忘记密码点击处理
+ */
+const handleForgotPassword = () => {
+  ElMessage.info({
+    message: '请联系管理员重置您的密码。',
+    duration: 3000,
+    showClose: true,
+  });
+};
+
+/**
+ * 处理登录表单提交（由 LoginCard 触发）
+ */
+const handleSubmit = async (data: {
+  username: string;
+  password: string;
+  captcha?: string;
+  rememberMe: boolean;
+}) => {
+  // 防止重复提交
+  if (loading.value) return;
 
   loading.value = true;
+
   try {
-    // TODO: 调用登录 API
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    // 调用 AuthStore 的 login 方法
+    const result = await authStore.login({
+      username: data.username,
+      password: data.password,
+      captcha: data.captcha,
+      captchaKey: captchaKey.value || undefined,
+    });
+
+    // 登录成功提示
     ElMessage.success('登录成功');
-    router.push('/');
-  } catch (error) {
-    ElMessage.error('登录失败，请检查用户名和密码');
+
+    // 跳转到目标页面或首页
+    const redirect = (route.query.redirect as string) || '/';
+    router.push(redirect);
+  } catch (error: any) {
+    // 增加失败计数
+    failCount.value++;
+
+    // 根据错误类型显示友好提示
+    let needRefreshCaptcha = false;
+
+    if (error.response?.status === 401) {
+      ElMessage.error('用户名或密码错误');
+      needRefreshCaptcha = true;
+    } else if (error.response?.status === 422) {
+      // 可能是验证码错误或字段验证失败
+      const msg = error.response?.data?.message || '';
+      if (
+        msg.toLowerCase().includes('captcha') ||
+        msg.includes('验证码')
+      ) {
+        ElMessage.error('验证码错误，请重新输入');
+      } else {
+        ElMessage.error(msg || '输入数据格式错误');
+      }
+      needRefreshCaptcha = true;
+    } else if (error.code === 'ERR_NETWORK') {
+      ElMessage.error('网络连接失败，请检查网络后重试');
+    } else if (error.message?.includes('timeout')) {
+      ElMessage.error('请求超时，请检查网络后重试');
+    } else {
+      // 显示后端返回的具体错误信息
+      const serverMsg = error.response?.data?.message;
+      ElMessage.error(serverMsg || '登录失败，请稍后重试');
+    }
+
+    // 首次失败后显示验证码并加载
+    if (failCount.value >= 1 && !showCaptcha.value) {
+      showCaptcha.value = true;
+      needRefreshCaptcha = true; // 首次显示时必须加载验证码
+    }
+
+    // 统一处理验证码刷新（避免重复调用）
+    if (showCaptcha.value && needRefreshCaptcha) {
+      await loadCaptcha();
+    }
   } finally {
     loading.value = false;
   }
 };
+
+// ========== 生命周期 ==========
+
+onMounted(() => {
+  console.log('[Login] 页面已挂载');
+});
 </script>
 
-<style scoped>
-.login-container {
+<style lang="scss" scoped>
+.login-page {
   display: flex;
-  justify-content: center;
+  min-height: 100vh;
+}
+
+.login-form-section {
+  display: flex;
   align-items: center;
-  width: 100%;
-  height: 100vh;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.login-card {
-  width: 400px;
+  justify-content: center;
+  flex: 1; // 占据剩余空间
   padding: 40px;
-  background: white;
-  border-radius: 12px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  background-color: #F9FAFB;
+
+  @media (max-width: 991px) {
+    padding: 24px 16px;
+  }
 }
 
-.login-title {
-  text-align: center;
-  font-size: 28px;
-  color: #303133;
-  margin-bottom: 8px;
-}
-
-.login-subtitle {
-  text-align: center;
-  font-size: 14px;
-  color: #909399;
-  margin-bottom: 32px;
+.login-container {
+  width: 100%;
+  max-width: 420px;
 }
 </style>

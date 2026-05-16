@@ -51,6 +51,7 @@ interface PendingEntry {
  * ```
  */
 export class CancelManager {
+  private pendingMap = new Map<string, PendingEntry>();
   private pageMap = new Map<string, Set<string>>();
 
   generateKey(config: InternalAxiosRequestConfig | InternalRequestConfig): string {

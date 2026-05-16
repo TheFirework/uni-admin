@@ -79,6 +79,8 @@ export interface RequestOptions extends RequestBaseOptions {
   pageKey?: string;
   /** 缓存 TTL（毫秒，兼容小写拼写） */
   cacheTtl?: number;
+  /** 是否跳过 401 认证跳转（如登录接口的 401 是业务错误） */
+  skipAuthRedirect?: boolean;
 }
 
 /**
@@ -103,6 +105,8 @@ export interface InternalMeta {
   returnBlob: boolean;
   /** 是否跳过错误处理中间件 */
   skipErrorHandler?: boolean;
+  /** 是否跳过 401 认证跳转（如登录接口的 401 是业务错误） */
+  skipAuthRedirect?: boolean;
   /** 缓存 TTL（毫秒） */
   cacheTtl?: number;
   /** 业务成功码列表 */

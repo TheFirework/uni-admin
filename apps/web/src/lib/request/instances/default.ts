@@ -3,10 +3,22 @@ import { LoadingManager, CancelManager, TokenManager, AuthLockManager } from '@u
 import { elementPlusNotifier } from '../adapters/error.adapter.js';
 import { navigateToLogin } from '../adapters/router.adapter.js';
 
+// 🔧 调试日志：确认此文件是否被加载
+console.log('[default.ts] 🚀 正在初始化 request 实例...');
+console.log('[default.ts] TokenManager 构造函数:', TokenManager?.toString()?.slice(0, 30));
+
 // 创建各管理器实例
 const loadingManager = new LoadingManager();
 const cancelManager = new CancelManager();
-const tokenManager = new TokenManager();
+// 显式传入白名单数组（避免构造函数参数推断问题）
+const tokenManager = new TokenManager([
+  '/auth/login',
+  '/auth/register',
+  '/auth/captcha',
+  '/public/',
+]);
+// 🔧 调试日志：确认 tokenManager 是否创建成功
+console.log('[default.ts] ✅ tokenManager 已创建:', typeof tokenManager, tokenManager?.constructor?.name);
 const authLockManager = new AuthLockManager();
 
 // 注入路由跳转能力到认证锁管理器

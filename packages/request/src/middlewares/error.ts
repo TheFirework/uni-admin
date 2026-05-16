@@ -114,9 +114,12 @@ export function createErrorMiddleware(
       return;
     }
 
-    // ===== 2. 401 未授权：触发认证流程 =====
+    // ===== 2. 401 未授权：触发认证流程（排除登录等业务接口） =====
     if (isHttpError(error, 401)) {
-      await authLockManager.handle401();
+      // 检查是否跳过认证跳转（如登录接口的 401 是业务错误，不应跳转）
+      if (!ctx.config._internal?.skipAuthRedirect) {
+        await authLockManager.handle401();
+      }
       return;
     }
 

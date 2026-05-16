@@ -64,6 +64,43 @@ export class LoginDto {
     },
   )
   password!: string;  // 使用 definite assignment assertion（!），表示该属性会在验证后由 class-validator 赋值
+
+  /**
+   * 验证码文本（可选）
+   *
+   * 使用场景:
+   *   - 首次登录失败后，前端会显示验证码
+   *   - 用户需要输入验证码才能继续登录
+   *   - 后端通过 captchaKey 从 Redis 获取存储的验证码进行比对
+   *
+   * 验证规则:
+   *   - 可选字段（首次登录不需要）
+   *   - 如果提供则必须是字符串
+   */
+  @ApiPropertyOptional({
+    description: '验证码文本（首次失败后必填）',
+    example: 'A3xK',
+  })
+  @IsOptional()
+  @IsString({ message: '验证码必须是字符串' })
+  captcha?: string;
+
+  /**
+   * 验证码唯一标识（可选）
+   *
+   * 功能说明:
+   *   - 与 captcha 成对使用
+   *   - 用于从 Redis 查找对应的验证码文本
+   *   - 每次获取验证码图片时生成新的 UUID
+   */
+  @ApiPropertyOptional({
+    description: '验证码标识（与 captcha 成对使用）',
+    example: '550e8400-e29b-41d4-a716-446655440000',
+    format: 'uuid',
+  })
+  @IsOptional()
+  @IsString({ message: 'captchaKey 必须是字符串' })
+  captchaKey?: string;
 }
 
 /**

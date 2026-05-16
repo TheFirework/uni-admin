@@ -31,8 +31,8 @@ import { LoggerService as AppLoggerService } from '../logger/logger.service.js';
 
 /** 统一错误响应体结构 */
 export interface ErrorResponse {
-  /** 业务错误码 */
-  code: string;
+  /** 业务错误码（使用 HTTP 状态码数字格式） */
+  code: number;
   /** 用户可读消息 */
   message: string;
   /** 校验错误详情（仅 ValidationError 时存在） */
@@ -54,24 +54,41 @@ export interface ValidationErrorDetail {
 /**
  * 异常类型到 { httpStatus, businessCode } 的映射表
  * 用于将不同类型的异常转换为统一的业务错误响应
+ *
+ * 注意：code 字段统一使用 HTTP 状态码数字格式
  */
-const EXCEPTION_MAP: Record<string, { status: HttpStatus; code: string }> = {
+const EXCEPTION_MAP: Record<string, { status: HttpStatus; code: number }> = {
   // HTTP 标准异常 → 业务错误码映射
-  BadRequest: { status: HttpStatus.BAD_REQUEST, code: 'BAD_REQUEST' },
-  Unauthorized: { status: HttpStatus.UNAUTHORIZED, code: 'UNAUTHORIZED' },
-  Forbidden: { status: HttpStatus.FORBIDDEN, code: 'FORBIDDEN' },
-  NotFound: { status: HttpStatus.NOT_FOUND, code: 'NOT_FOUND' },
-  MethodNotAllowed: { status: HttpStatus.METHOD_NOT_ALLOWED, code: 'METHOD_NOT_ALLOWED' },
-  UnprocessableEntity: {
+  // 注意：使用完整的 NestJS 异常类名
+  BadRequestException: { status: HttpStatus.BAD_REQUEST, code: 400 },
+  UnauthorizedException: { status: HttpStatus.UNAUTHORIZED, code: 401 },
+  ForbiddenException: { status: HttpStatus.FORBIDDEN, code: 403 },
+  NotFoundException: { status: HttpStatus.NOT_FOUND, code: 404 },
+  MethodNotAllowedException: { status: HttpStatus.METHOD_NOT_ALLOWED, code: 405 },
+  UnprocessableEntityException: {
     status: HttpStatus.UNPROCESSABLE_ENTITY,
-    code: 'VALIDATION_ERROR',
+    code: 422,
   },
-  TooManyRequests: { status:HttpStatus.TOO_MANY_REQUESTS, code: 'RATE_LIMIT_EXCEEDED' },
+  TooManyRequestsException: { status: HttpStatus.TOO_MANY_REQUESTS, code: 429 },
+};
+
+/**
+ * 基于 HTTP 状态码的兜底映射
+ * 当异常类名无法匹配时，使用状态码作为 code
+ */
+const STATUS_CODE_MAP: Record<number, number> = {
+  [HttpStatus.BAD_REQUEST]: 400,
+  [HttpStatus.UNAUTHORIZED]: 401,
+  [HttpStatus.FORBIDDEN]: 403,
+  [HttpStatus.NOT_FOUND]: 404,
+  [HttpStatus.METHOD_NOT_ALLOWED]: 405,
+  [HttpStatus.UNPROCESSABLE_ENTITY]: 422,
+  [HttpStatus.TOO_MANY_REQUESTS]: 429,
 };
 
 @Catch()
 export class HttpExceptionFilter implements ExceptionFilter {
-  constructor(private readonly logger: AppLoggerService) {}
+  constructor(private readonly logger: AppLoggerService) { }
 
   catch(exception: unknown, host: ArgumentsHost): void {
     const ctx = host.switchToHttp();
@@ -128,6 +145,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
   /**
    * 处理 HttpException 类型异常
    * 从 EXCEPTION_MAP 中查找对应的状态码和业务错误码
+   * 如果类名无法匹配，则基于 HTTP 状态码进行兜底匹配
    */
   private handleHttpException(
     exception: HttpException,
@@ -137,11 +155,14 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const status = exception.getStatus();
     const exceptionName = exception.constructor.name;
 
-    // 尝试从映射表获取业务错误码，未命中则使用默认值
-    const mapped = EXCEPTION_MAP[exceptionName] || {
-      status,
-      code: 'SERVER_ERROR',
-    };
+    // 尝试从映射表获取业务错误码（优先按类名匹配）
+    let mapped = EXCEPTION_MAP[exceptionName];
+
+    // 兜底：如果类名无法匹配，则按 HTTP 状态码匹配
+    if (!mapped) {
+      const code = STATUS_CODE_MAP[status] || 500;
+      mapped = { status, code };
+    }
 
     // 提取异常响应中的 message（支持字符串或对象格式）
     const exceptionResponse = exception.getResponse();
@@ -149,8 +170,8 @@ export class HttpExceptionFilter implements ExceptionFilter {
       typeof exceptionResponse === 'string'
         ? exceptionResponse
         : (exceptionResponse as Record<string, unknown>)?.message ||
-          exception.message ||
-          '服务器内部错误';
+        exception.message ||
+        '服务器内部错误';
 
     return {
       status: mapped.status,
@@ -199,7 +220,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     extractErrors(errors);
 
     return {
-      code: 'VALIDATION_ERROR',
+      code: 422,
       message: '请求参数校验失败',
       details,
       timestamp: new Date().toISOString(),
@@ -219,7 +240,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const isProduction = appEnv === 'production';
 
     return {
-      code: 'INTERNAL_SERVER_ERROR',
+      code: 500,
       message: isProduction ? '服务器内部错误，请稍后重试' : `未知异常: ${String(exception)}`,
       timestamp: new Date().toISOString(),
       path: request.url,

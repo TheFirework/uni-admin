@@ -21,6 +21,10 @@ export default defineConfig(() => {
         dts: 'src/components.d.ts',
       }),
     ],
+    // 强制排除 @uni-admin/request 的依赖预构建，确保使用最新源码
+    optimizeDeps: {
+      exclude: ['@uni-admin/request'],
+    },
     resolve: {
       alias: {
         '@': fileURLToPath(new URL('./src', import.meta.url)),

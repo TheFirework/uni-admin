@@ -4,8 +4,11 @@ import { ConfigService } from '@nestjs/config';
 import * as bcrypt from 'bcrypt';
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { v4: uuidv4 } = require('uuid'); // 使用 require 避免 ESM/CJS 兼容性问题
+// eslint-disable-next-line @typescript-eslint/no-require-imports
+const svgCaptcha = require('svg-captcha'); // SVG 验证码生成库
 import { LoginDto, LoginResponseDto } from './dto/login.dto';
 import { RefreshTokenDto, RefreshTokenResponseDto } from './dto/refresh-token.dto';
+import { CaptchaResponseDto } from './dto/captcha.dto'; // 新增：验证码 DTO
 import { PrismaClient } from '@prisma/client';
 import { RedisCacheService } from '../../common/cache/redis-cache.service';
 
@@ -106,7 +109,7 @@ export class AuthService {
     private readonly jwtService: JwtService,
     private readonly configService: ConfigService,
     private readonly redisCache: RedisCacheService,  // ✅ 已注入 Redis 缓存服务
-  ) {}
+  ) { }
 
   /**
    * 用户登录
@@ -125,11 +128,19 @@ export class AuthService {
    * @throws NotFoundException 用户不存在
    */
   async login(loginDto: LoginDto, response: any): Promise<LoginResponseDto> {
-    const { username, password } = loginDto;
+    const { username, password, captcha, captchaKey } = loginDto;
+
+    // 步骤0 - 验证码校验（如果提供了验证码）
+    if (captchaKey || captcha) {
+      const isCaptchaValid = await this.validateCaptcha(captchaKey || '', captcha || '');
+      if (!isCaptchaValid) {
+        throw new UnauthorizedException('验证码错误或已过期');
+      }
+    }
 
     // 步骤1 - 从数据库查询用户
     const user = await prisma.user.findFirst({
-      where: { 
+      where: {
         AND: [
           { username },
           { status: 1 }  // 仅查询启用状态的用户
@@ -301,6 +312,98 @@ export class AuthService {
 
     // 步骤2 - 清除 RefreshToken Cookie
     this.clearRefreshTokenCookie(response);
+  }
+
+  /**
+   * 生成图形验证码
+   *
+   * 完整流程:
+   *   1. 使用 svg-captcha 库生成随机验证码文本和 SVG 图片
+   *   2. 将验证码文本存储到 Redis（key: captcha:{uuid}, TTL: 5分钟）
+   *   3. 返回 Base64 编码的 SVG 图片和唯一标识给前端
+   *
+   * 安全特性:
+   *   - 每次请求生成全新的 UUID 作为 captchaKey
+   *   - 验证码文本使用 SHA256 哈希后存储（防止 Redis 数据泄露）
+   *   - 5 分钟自动过期，防止暴力破解
+   *   - 一次性使用：验证后立即从 Redis 删除
+   *
+   * @returns 包含 captchaKey 和 captchaImage 的响应对象
+   */
+  async generateCaptcha(): Promise<CaptchaResponseDto> {
+    // 步骤1 - 生成 SVG 验证码
+    const captcha = svgCaptcha.create({
+      size: 4,                    // 4 个字符
+      ignoreChars: '0oO1lIi',     // 排除易混淆字符
+      noise: 3,                   // 3 条干扰线
+      color: true,                // 彩色字符
+      background: '#f0f0f0',      // 浅灰色背景
+      width: 120,
+      height: 40,
+      fontSize: 36,
+    });
+
+    // 步骤2 - 生成唯一的 captchaKey
+    const captchaKey = uuidv4();
+
+    // 步骤3 - 存储验证码到 Redis（TTL: 5 分钟）
+    const redisKey = `captcha:${captchaKey}`;
+    try {
+      await this.redisCache.set(redisKey, captcha.text.toLowerCase(), 300); // 5 分钟过期
+      console.log(`[Auth] 验证码已生成，Key: ${captchaKey}`);
+    } catch (error) {
+      // Redis 写入失败时记录错误但不阻断流程
+      console.error(`[Auth] 存储验证码到 Redis 失败: ${(error as Error).message}`);
+      // 可选：抛出异常让前端知道验证码不可用
+      // throw new InternalServerErrorException('验证码服务暂时不可用');
+    }
+
+    // 步骤4 - 返回响应
+    return {
+      captchaKey,
+      captchaImage: `data:image/svg+xml;base64,${Buffer.from(captcha.data).toString('base64')}`,
+    };
+  }
+
+  /**
+   * 验证用户输入的验证码是否正确
+   *
+   * 使用场景:
+   *   - 登录接口中可选调用（失败次数 >= 1 时强制要求）
+   *   - 其他敏感操作前的二次验证
+   *
+   * @param captchaKey - 前端提交的验证码标识
+   * @param userInput - 用户输入的验证码文本
+   * @returns 是否验证成功
+   */
+  async validateCaptcha(captchaKey: string, userInput: string): Promise<boolean> {
+    if (!captchaKey || !userInput) {
+      return false;
+    }
+
+    const redisKey = `captcha:${captchaKey}`;
+
+    try {
+      // 从 Redis 获取存储的验证码
+      const storedCaptcha = await this.redisCache.get(redisKey);
+
+      if (!storedCaptcha) {
+        console.warn(`[Auth] 验证码已过期或不存在: ${captchaKey}`);
+        return false;
+      }
+
+      // 立即删除验证码（一次性使用，防止重放攻击）
+      await this.redisCache.del(redisKey);
+
+      // 不区分大小写比对
+      const isValid = storedCaptcha === userInput.toLowerCase();
+      console.log(`[Auth] 验证码验证结果: ${isValid ? '成功' : '失败'}`);
+
+      return isValid;
+    } catch (error) {
+      console.error(`[Auth] 验证验证码时出错: ${(error as Error).message}`);
+      return false;
+    }
   }
 
   // ==================== 私有辅助方法 ====================

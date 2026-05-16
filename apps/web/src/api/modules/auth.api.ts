@@ -32,20 +32,20 @@ export interface CaptchaResult {
   captchaImage: string;
 }
 
-let api: typeof import('@/lib/request/instances/default.js').defaultInstance;
+let api: typeof import('@/lib/request/instances/default.js').default;
 
 async function getApi() {
   if (!api) {
     const mod = await import('@/lib/request/instances/default.js');
-    api = mod.defaultInstance;
+    api = mod.default;
   }
   return api;
 }
 
-/** 登录（跳过 Token 和错误提示） */
+/** 登录（跳过 Token、错误提示和认证跳转，由调用方统一处理） */
 export async function login(data: LoginDTO): Promise<LoginResult> {
   const instance = await getApi();
-  return instance.post('/auth/login', data, { skipToken: true });
+  return instance.post('/auth/login', data, { skipToken: true, showError: false, skipAuthRedirect: true });
 }
 
 /** 登出 */
@@ -57,7 +57,7 @@ export async function logout(): Promise<void> {
 /** 获取验证码图片 */
 export async function getCaptcha(): Promise<CaptchaResult> {
   const instance = await getApi();
-  return instance.get('/auth/captcha', { skipToken: true });
+  return instance.get('/auth/captcha', { skipToken: true, showError: false });
 }
 
 /** 刷新 Token */

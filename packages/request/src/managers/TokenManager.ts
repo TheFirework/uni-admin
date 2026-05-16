@@ -76,6 +76,9 @@ export class TokenManager {
   private customGetToken?: () => string | null | Promise<string | null>;
 
   constructor(options?: string[] | { getToken?: () => string | null | Promise<string | null> }) {
+    // 🔧 [2026-05-16] 版本标记：确认此文件已更新
+    console.log('[TokenManager] ✅ 已加载最新版本 (v2.0 - 防御性增强)');
+
     if (Array.isArray(options)) {
       this.setWhiteList(options);
     } else if (options && typeof options === 'object' && 'getToken' in options) {
@@ -139,7 +142,14 @@ export class TokenManager {
     });
   }
 
-  setWhiteList(patterns: string[]): this {
+  setWhiteList(patterns: string[] | string | undefined | null): this {
+    // 防御性编程：确保 patterns 是数组
+    if (!Array.isArray(patterns)) {
+      console.warn('[TokenManager] setWhiteList 期望接收数组参数，但收到:', typeof patterns);
+      this.whiteList = [];
+      return this;
+    }
+
     this.whiteList = patterns.map(p => ({
       type: p.endsWith('/**') || p.endsWith('/') ? ('prefix' as const) : ('exact' as const),
       pattern: p.replace(/\/\*\*$/, '').replace(/\/$/, ''),
