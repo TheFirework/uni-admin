@@ -95,27 +95,4 @@ export const QueryParamsSchema = z.object({
 // 查询参数类型推导
 export type QueryParamsInput = z.infer<typeof QueryParamsSchema>;
 
-// ==================== 响应结构通用 Schema ====================
-// 标准 API 响应的数据包装结构
-export const ApiResponseSchema = <T extends z.ZodTypeAny>(dataSchema: T) =>
-  z.object({
-    // 是否成功
-    success: z.boolean(),
 
-    // 响应消息
-    message: z.string().optional(),
-
-    // 响应数据
-    data: dataSchema.optional(),
-
-    // 分页信息（仅在列表接口时返回）
-    pagination: z.object({
-      total: z.number(),
-      page: z.number(),
-      pageSize: z.number(),
-      totalPages: z.number(),
-    }).optional(),
-  });
-
-// API 响应类型推导（泛型）
-export type ApiResponse<T> = z.infer<ReturnType<typeof ApiResponseSchema<T>>>;

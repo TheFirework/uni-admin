@@ -1,0 +1,115 @@
+// ============================================
+// Uni-Admin 全局 SCSS 设计变量
+// 现代简约风格设计系统
+// ============================================
+
+// ----------------------------------------
+// 主色调（Primary Colors）
+// ----------------------------------------
+$primary-color: #5B9BD5;          // 柔和蓝色
+$primary-light: #E8F4FD;          // 极浅蓝背景
+$primary-dark: #4A8BC4;           // 深蓝（hover 状态）
+$primary-gradient: linear-gradient(135deg, $primary-color 0%, #4A90D9 100%);
+
+// ----------------------------------------
+// 中性色（Neutral Colors）
+// ----------------------------------------
+$text-primary: #1F2937;           // 深灰色（主文字）
+$text-secondary: #6B7280;         // 中灰色（次要文字）
+$text-muted: #9CA3AF;            // 浅灰色（辅助文字）
+
+// ----------------------------------------
+// 边框与背景（Border & Background）
+// ----------------------------------------
+$border-color: #E5E7EB;          // 浅灰边框
+$background-color: #F9FAFB;      // 页面背景色
+
+// ----------------------------------------
+// 功能色（Functional Colors）
+// ----------------------------------------
+$success: #10B981;                // 成功 - 翠绿色
+$warning: #F59E0B;                // 警告 - 琥珀色
+$danger: #EF4444;                 // 错误/危险 - 红色
+$info: #3B82F6;                   // 信息 - 蓝色
+
+// ----------------------------------------
+// 卡片样式（Card Styles）
+// ----------------------------------------
+$card-border-radius: 16px;        // 大圆角
+$card-shadow: 0 4px 24px rgba(0, 0, 0, 0.06);  // 柔和阴影
+$card-padding: 32px;              // 宽松内边距
+
+// ----------------------------------------
+// 表单元素样式（Form Element Styles）
+// ----------------------------------------
+$input-height: 48px;              // 触摸友好的输入框高度
+$input-border-radius: 10px;       // 圆角输入框
+$input-focus-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15);  // 柔和聚焦环
+
+// ----------------------------------------
+// 品牌区样式（Brand Section Styles）
+// ----------------------------------------
+$brand-gradient: linear-gradient(135deg, #E8F4FD 0%, #F0E6FA 100%);  // 明亮渐变背景
+
+// ----------------------------------------
+// 断点（Breakpoints）
+// ----------------------------------------
+$breakpoint-sm: 576px;   // 手机横屏
+$breakpoint-md: 768px;   // 平板竖屏
+$breakpoint-lg: 992px;   // 平板横屏 / 小桌面
+$breakpoint-xl: 1200px;  // 桌面端
+
+// ----------------------------------------
+// 间距规范（Spacing Scale）
+// ----------------------------------------
+$spacing-xs: 4px;
+$spacing-sm: 8px;
+$spacing-base: 16px;
+$spacing-lg: 24px;
+$spacing-xl: 32px;
+$spacing-2xl: 48px;
+
+// ----------------------------------------
+// 字体大小（Font Sizes）
+// ----------------------------------------
+$font-size-xs: 12px;
+$font-size-sm: 14px;
+$font-size-base: 15px;
+$font-size-md: 16px;
+$font-size-lg: 18px;
+$font-size-xl: 24px;
+$font-size-2xl: 32px;
+
+// ----------------------------------------
+// 字重（Font Weights）
+// ----------------------------------------
+$font-weight-normal: 400;
+$font-weight-medium: 500;
+$font-weight-semibold: 600;
+$font-weight-bold: 700;
+
+// ----------------------------------------
+// 过渡动画（Transitions）
+// ----------------------------------------
+$transition-fast: 0.15s ease;
+$transition-base: 0.2s ease;
+$transition-slow: 0.3s ease;
+
+// ----------------------------------------
+// 阴影层级（Shadow Levels）
+// ----------------------------------------
+$shadow-sm: 0 1px 3px rgba(0, 0, 0, 0.04);
+$shadow-base: 0 4px 24px rgba(0, 0, 0, 0.06);
+$shadow-md: 0 8px 32px rgba(0, 0, 0, 0.08);
+$shadow-lg: 0 12px 48px rgba(0, 0, 0, 0.12);
+
+// ----------------------------------------
+// z-index 层级管理
+// ----------------------------------------
+$z-index-dropdown: 1000;
+$z-index-sticky: 1020;
+$z-index-fixed: 1030;
+$z-index-modal-backdrop: 1040;
+$z-index-modal: 1050;
+$z-index-popover: 1060;
+$z-index-tooltip: 1070;

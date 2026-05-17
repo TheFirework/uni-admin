@@ -25,7 +25,6 @@ export {
   DateRangeSchema,
   SortSchema,
   QueryParamsSchema,
-  ApiResponseSchema,
 } from './common.schema.js';
 
 export type {
@@ -35,7 +34,6 @@ export type {
   DateRangeInput,
   SortInput,
   QueryParamsInput,
-  ApiResponse,
 } from './common.schema.js';
 
 // ==================== 用户相关 Schema 导出 ====================

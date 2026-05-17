@@ -4,6 +4,7 @@ import { SwaggerModule, DocumentBuilder } from '@nestjs/swagger';
 import { AppModule } from './app.module.js';
 import { LoggerService } from './common/logger/logger.service.js';
 import { LoggingInterceptor } from './common/interceptors/logging.interceptor.js';
+import { ResponseInterceptor } from './common/interceptors/response.interceptor.js';
 import { HttpExceptionFilter } from './common/filters/http-exception.filter.js';
 import { getConfig } from './config/env.config.js';
 
@@ -12,7 +13,7 @@ async function bootstrap() {
   const config = getConfig();
 
   // ====== 全局前缀与 CORS ======
-  app.setGlobalPrefix('api/v1');
+  app.setGlobalPrefix('api');
 
   app.enableCors({
     origin: config.corsOrigins.length > 0 ? config.corsOrigins : ['http://localhost:5173'],
@@ -28,9 +29,11 @@ async function bootstrap() {
     })
   );
 
-  // ====== 全局拦截器: 请求日志 ======
+  // ====== 全局拦截器: 日志 + 统一响应包装 ======
+  // 拦截器注册顺序 = 执行顺序（先日志后包装）
   const loggerService = app.get(LoggerService);
   app.useGlobalInterceptors(new LoggingInterceptor(loggerService));
+  app.useGlobalInterceptors(new ResponseInterceptor());
 
   // ====== 全局过滤器: 异常统一处理 ======
   app.useGlobalFilters(new HttpExceptionFilter(loggerService));

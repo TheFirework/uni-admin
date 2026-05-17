@@ -6,13 +6,14 @@
  *   2. 区分 HttpException、ValidationError（class-validator）、未知异常
  *   3. 生产环境隐藏堆栈信息（仅记录到日志文件）
  *
- * 统一响应格式:
+ * 统一错误响应格式:
  *   {
- *     code: "BUSINESS_ERROR",       // 业务错误码（前端可据此做国际化/逻辑判断）
+ *     success: false,              // 统一标记为失败
+ *     code: 401 | "INVALID_SIGNATURE",  // HTTP 状态码 或 自定义业务错误码
  *     message: "操作失败",            // 用户可读的错误描述
  *     details: [...],                // 可选：校验错误详情数组
  *     timestamp: "2026-05-15T...",   // ISO 时间戳
- *     path: "/api/v1/users"          // 请求路径
+ *     path: "/api/auth/login"        // 请求路径
  *   }
  */
 
@@ -31,8 +32,10 @@ import { LoggerService as AppLoggerService } from '../logger/logger.service.js';
 
 /** 统一错误响应体结构 */
 export interface ErrorResponse {
-  /** 业务错误码（使用 HTTP 状态码数字格式） */
-  code: number;
+  /** 标记为失败响应 */
+  success: false;
+  /** 业务错误码（HTTP 状态码数字 或 自定义业务码字符串） */
+  code: number | string;
   /** 用户可读消息 */
   message: string;
   /** 校验错误详情（仅 ValidationError 时存在） */
@@ -151,32 +154,46 @@ export class HttpExceptionFilter implements ExceptionFilter {
     exception: HttpException,
     request: Request
   ): { status: HttpStatus; body: ErrorResponse } {
-    // 获取异常原始状态码
     const status = exception.getStatus();
     const exceptionName = exception.constructor.name;
 
-    // 尝试从映射表获取业务错误码（优先按类名匹配）
+    const exceptionResponse = exception.getResponse();
+    const exceptionBody =
+      typeof exceptionResponse === 'object' && exceptionResponse !== null
+        ? (exceptionResponse as Record<string, unknown>)
+        : null;
+
+    // 保留异常自带的 code：
+    // 1) SignAuthGuard 场景：code 为 string 类型（如 'INVALID_SIGNATURE'）
+    // 2) BusinessException 场景：body 包含 success: false，code 为业务错误码数字
+    const hasCustomCode =
+      (exceptionBody && typeof exceptionBody.code === 'string') ||
+      (exceptionBody && exceptionBody.success === false);
+
     let mapped = EXCEPTION_MAP[exceptionName];
 
-    // 兜底：如果类名无法匹配，则按 HTTP 状态码匹配
     if (!mapped) {
       const code = STATUS_CODE_MAP[status] || 500;
       mapped = { status, code };
     }
 
-    // 提取异常响应中的 message（支持字符串或对象格式）
-    const exceptionResponse = exception.getResponse();
+    const code: number | string =
+      hasCustomCode && exceptionBody
+        ? (exceptionBody.code as number | string)
+        : mapped.code;
+
     const message =
       typeof exceptionResponse === 'string'
         ? exceptionResponse
-        : (exceptionResponse as Record<string, unknown>)?.message ||
+        : exceptionBody?.message ||
         exception.message ||
         '服务器内部错误';
 
     return {
       status: mapped.status,
       body: {
-        code: mapped.code,
+        success: false,
+        code,
         message: Array.isArray(message) ? message.join('; ') : String(message),
         timestamp: new Date().toISOString(),
         path: request.url,
@@ -220,6 +237,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     extractErrors(errors);
 
     return {
+      success: false,
       code: 422,
       message: '请求参数校验失败',
       details,
@@ -240,6 +258,7 @@ export class HttpExceptionFilter implements ExceptionFilter {
     const isProduction = appEnv === 'production';
 
     return {
+      success: false,
       code: 500,
       message: isProduction ? '服务器内部错误，请稍后重试' : `未知异常: ${String(exception)}`,
       timestamp: new Date().toISOString(),
