@@ -7,27 +7,43 @@
     </header>
 
     <!-- 登录表单 -->
-    <Form v-slot="{ errors }" class="login-form" @submit="handleSubmit">
+    <Form class="login-form" @submit="handleSubmit">
       <!-- 用户名输入框 -->
-      <Field name="username" v-slot="{ field, errorMessage }">
-        <el-form-item :error="errorMessage" class="form-item">
-          <el-input v-bind="field" :placeholder="'请输入用户名'" size="large" :autocomplete="autocompleteUsername">
+      <Field name="username" v-slot="{ field }">
+        <el-form-item class="form-item">
+          <el-input v-bind="field" placeholder="请输入用户名" size="large" clearable :autocomplete="autocompleteUsername">
             <template #prefix>
               <Icon icon="mdi:account-outline" />
             </template>
           </el-input>
+
+          <!-- 内联错误提示 -->
+          <transition name="error-fade">
+            <div v-if="fieldErrors.username" class="field-error">
+              <Icon icon="mdi:alert-circle-outline" class="error-icon" />
+              <span>{{ fieldErrors.username }}</span>
+            </div>
+          </transition>
         </el-form-item>
       </Field>
 
       <!-- 密码输入框 -->
-      <Field name="password" v-slot="{ field, errorMessage }">
-        <el-form-item :error="errorMessage" class="form-item">
-          <el-input v-bind="field" type="password" :placeholder="'请输入密码'" size="large" show-password
+      <Field name="password" v-slot="{ field }">
+        <el-form-item class="form-item">
+          <el-input v-bind="field" type="password" placeholder="请输入密码" size="large" show-password clearable
             :autocomplete="autocompletePassword">
             <template #prefix>
               <Icon icon="mdi:lock-outline" />
             </template>
           </el-input>
+
+          <!-- 内联错误提示 -->
+          <transition name="error-fade">
+            <div v-if="fieldErrors.password" class="field-error">
+              <Icon icon="mdi:alert-circle-outline" class="error-icon" />
+              <span>{{ fieldErrors.password }}</span>
+            </div>
+          </transition>
         </el-form-item>
       </Field>
 
@@ -62,10 +78,10 @@
 </template>
 
 <script setup lang="ts">
-import { ref, computed } from 'vue';
+import { ref, computed, reactive } from 'vue';
 import { Form, Field } from 'vee-validate';
 import { Icon } from '@iconify/vue';
-import { ElButton, ElFormItem, ElMessage } from 'element-plus';
+import { ElButton, ElFormItem } from 'element-plus';
 import { z } from 'zod';
 import CaptchaInput from './CaptchaInput.vue';
 import RememberMe from './RememberMe.vue';
@@ -78,6 +94,16 @@ const LoginSchema = z.object({
   password: z.string().min(1, '密码不能为空'),
   captcha: z.string().optional(),
 });
+
+// 将 Zod schema 转换为 VeeValidate 可用的格式（提取错误映射）
+const getZodErrorMessage = (fieldName: string, defaultValue: string = '验证失败') => {
+  const fieldMap: Record<string, string> = {
+    username: '用户名不能为空',
+    password: '密码不能为空',
+    captcha: '验证码格式错误'
+  };
+  return fieldMap[fieldName] || defaultValue;
+};
 
 /**
  * LoginCard 组件 Props
@@ -108,6 +134,12 @@ const emit = defineEmits<{
 
 const rememberMe = ref(false);
 
+// 字段级错误状态（用于内联显示）
+const fieldErrors = reactive<Record<string, string>>({
+  username: '',
+  password: ''
+});
+
 const autocompleteUsername = computed(() => (rememberMe.value ? 'username' : 'off'));
 const autocompletePassword = computed(() => (rememberMe.value ? 'current-password' : 'new-password'));
 
@@ -115,6 +147,10 @@ const autocompletePassword = computed(() => (rememberMe.value ? 'current-passwor
  * 处理表单提交 - vee-validate 自动传入已验证的值
  */
 const handleSubmit = (values: Record<string, any>) => {
+  // 先清除之前的错误
+  fieldErrors.username = '';
+  fieldErrors.password = '';
+
   const result = LoginSchema.safeParse({
     username: values.username,
     password: values.password,
@@ -122,9 +158,15 @@ const handleSubmit = (values: Record<string, any>) => {
   });
 
   if (!result.success) {
-    const firstError = result.error.issues[0];
-    ElMessage.warning(firstError.message);
-    return;
+    // 遍历 Zod 验证错误，设置到对应字段（触发内联错误提示）
+    result.error.issues.forEach((issue) => {
+      const fieldName = issue.path[0] as string;
+      if (fieldName) {
+        // 始终使用友好的中文错误消息（忽略 Zod 原始技术性错误信息）
+        fieldErrors[fieldName] = getZodErrorMessage(fieldName);
+      }
+    });
+    return; // 阻止表单提交
   }
 
   emit('submit', {
@@ -144,6 +186,18 @@ const handleSubmit = (values: Record<string, any>) => {
   padding: 48px 40px;
   width: 100%;
   max-width: 420px;
+
+  // 响应式：平板及以下设备
+  @media (max-width: 768px) {
+    padding: 32px 24px;
+    border-radius: 12px;
+  }
+
+  // 响应式：手机设备
+  @media (max-width: 576px) {
+    padding: 24px 16px;
+    border-radius: 8px;
+  }
 }
 
 .card-header {
@@ -174,6 +228,33 @@ const handleSubmit = (values: Record<string, any>) => {
 
 .form-item {
   margin-bottom: 0; // 覆盖 Element Plus 默认底部间距
+
+  // 输入框聚焦效果增强
+  :deep(.el-input__wrapper) {
+    transition: all 0.2s ease; // 平滑过渡动画
+
+    // 聚焦状态：边框变色 + 柔和阴影 + 微上浮
+    &:focus-within {
+      border-color: #5B9BD5; // 主色调蓝色
+      box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15); // 柔和的聚焦环
+      transform: translateY(-1px); // 微妙的上浮效果
+    }
+  }
+
+  // 清空图标显示优化（hover 或 focus 时可见）
+  :deep(.el-input:hover .el-input__clear),
+  :deep(.el-input__wrapper:focus-within ~ .el-input__suffix .el-input__clear) {
+    visibility: visible !important; // 覆盖 Element Plus 内联样式
+  }
+
+  // 输入框高度响应式调整（移动端触摸友好）
+  :deep(.el-input__inner) {
+    height: 48px; // 默认桌面端高度
+
+    @media (max-width: 576px) {
+      height: 52px; // 移动端增大至 52px（符合触摸友好标准 ≥44px）
+    }
+  }
 }
 
 .captcha-section {
@@ -229,5 +310,32 @@ const handleSubmit = (values: Record<string, any>) => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
+}
+
+// 内联错误提示样式
+.field-error {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 13px;
+  color: #EF4444; // 错误红色
+
+  .error-icon {
+    font-size: 16px;
+    flex-shrink: 0; // 防止图标被压缩
+  }
+}
+
+// 错误提示淡入淡出动画
+.error-fade-enter-active,
+.error-fade-leave-active {
+  transition: all 0.2s ease;
+}
+
+.error-fade-enter-from,
+.error-fade-leave-to {
+  opacity: 0;
+  transform: translateY(-4px);
 }
 </style>

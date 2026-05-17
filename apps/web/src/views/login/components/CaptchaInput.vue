@@ -6,6 +6,7 @@
       placeholder="请输入验证码"
       size="large"
       maxlength="6"
+      clearable
       @update:model-value="$emit('update:modelValue', $event)"
       @keyup.enter="$emit('enter')"
     />
