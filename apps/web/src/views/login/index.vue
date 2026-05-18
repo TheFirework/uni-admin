@@ -7,9 +7,15 @@
     <main class="login-form-section">
       <div class="login-container">
         <!-- 登录卡片（核心组件） -->
-        <LoginCard :show-captcha="showCaptcha" :loading="loading" :captcha-image="captchaImage"
-          :captcha-loading="captchaLoading" @submit="handleSubmit" @captcha-refresh="handleRefreshCaptcha"
-          @forgot-password="handleForgotPassword" />
+        <LoginCard
+          :show-captcha="showCaptcha"
+          :loading="loading"
+          :captcha-image="captchaImage"
+          :captcha-loading="captchaLoading"
+          @submit="handleSubmit"
+          @captcha-refresh="handleRefreshCaptcha"
+          @forgot-password="handleForgotPassword"
+        />
       </div>
     </main>
   </div>

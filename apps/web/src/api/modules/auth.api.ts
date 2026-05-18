@@ -9,13 +9,12 @@ export interface LoginDTO {
 
 export interface LoginResult {
   accessToken: string;
-  refreshToken: string;
   expiresIn: number;
   user: {
-    id: string;
+    userId: string;
     username: string;
-    nickname: string;
-    roles: string[];
+    email: string;
+    roles: number[];
   };
 }
 

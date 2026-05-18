@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none">
+  <!-- 背景圆 -->
+  <circle cx="64" cy="64" r="60" fill="#1890ff"/>
+  
+  <!-- 字母 U -->
+  <path d="M42 45v30c0 12 8 20 22 20s22-8 22-20V45h-10v28c0 7-5 11-12 11s-12-4-12-11V45H42z" fill="white"/>
+  
+  <!-- 装饰点 -->
+  <circle cx="88" cy="38" r="6" fill="#52c41a"/>
+</svg>

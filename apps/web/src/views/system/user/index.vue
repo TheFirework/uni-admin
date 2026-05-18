@@ -4,18 +4,41 @@
     <p>用户管理功能开发中...</p>
 
     <!-- 使用 Element Plus 原生表格组件（后续替换为 ui-components DataTable） -->
-    <el-table :data="tableData" v-loading="loading" style="width: 100%">
-      <el-table-column prop="username" label="用户名" width="120" />
-      <el-table-column prop="email" label="邮箱" width="200" />
-      <el-table-column prop="nickname" label="昵称" width="120" />
-      <el-table-column prop="status" label="状态" width="100">
+    <el-table
+      v-loading="loading"
+      :data="tableData"
+      style="width: 100%"
+    >
+      <el-table-column
+        prop="username"
+        label="用户名"
+        width="120"
+      />
+      <el-table-column
+        prop="email"
+        label="邮箱"
+        width="200"
+      />
+      <el-table-column
+        prop="nickname"
+        label="昵称"
+        width="120"
+      />
+      <el-table-column
+        prop="status"
+        label="状态"
+        width="100"
+      >
         <template #default="{ row }">
           <el-tag :type="row.status === 'ACTIVE' ? 'success' : 'danger'">
             {{ row.status }}
           </el-tag>
         </template>
       </el-table-column>
-      <el-table-column prop="createdAt" label="创建时间" />
+      <el-table-column
+        prop="createdAt"
+        label="创建时间"
+      />
     </el-table>
 
     <!-- 分页器 -->
@@ -69,12 +92,12 @@ const fetchUsers = async () => {
 };
 
 const handlePageChange = (page: number) => {
-  pagination.current = page;
+  pagination.value.current = page;
   fetchUsers();
 };
 
 const handleSizeChange = (size: number) => {
-  pagination.pageSize = size;
+  pagination.value.pageSize = size;
   fetchUsers();
 };
 </script>

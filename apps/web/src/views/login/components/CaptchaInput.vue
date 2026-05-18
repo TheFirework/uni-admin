@@ -12,10 +12,19 @@
     />
 
     <!-- 验证码图片区域 -->
-    <div class="captcha-image-wrapper" @click="handleRefresh">
+    <div
+      class="captcha-image-wrapper"
+      @click="handleRefresh"
+    >
       <!-- 加载中状态 -->
-      <div v-if="loading" class="captcha-loading">
-        <Icon icon="mdi:loading" class="spin-icon" />
+      <div
+        v-if="loading"
+        class="captcha-loading"
+      >
+        <Icon
+          icon="mdi:loading"
+          class="spin-icon"
+        />
         <span>加载中...</span>
       </div>
 
@@ -27,11 +36,17 @@
         class="captcha-img"
         title="点击刷新验证码"
         @error="handleError"
-      />
+      >
 
       <!-- 错误/占位状态 -->
-      <div v-else class="captcha-placeholder">
-        <Icon icon="mdi:refresh" class="refresh-icon" />
+      <div
+        v-else
+        class="captcha-placeholder"
+      >
+        <Icon
+          icon="mdi:refresh"
+          class="refresh-icon"
+        />
         <span>点击刷新</span>
       </div>
     </div>
@@ -53,7 +68,7 @@ interface Props {
   loading?: boolean;
 }
 
-withDefaults(defineProps<Props>(), {
+const props = withDefaults(defineProps<Props>(), {
   modelValue: '',
   captchaImage: '',
   loading: false,

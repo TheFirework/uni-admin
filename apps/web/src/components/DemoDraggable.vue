@@ -2,7 +2,9 @@
   <div class="demo-draggable">
     <div class="demo-header">
       <h2>VueDraggable 拖拽排序示例</h2>
-      <p class="demo-desc">拖拽卡片调整顺序，验证 vuedraggable 安装成功</p>
+      <p class="demo-desc">
+        拖拽卡片调整顺序，验证 vuedraggable 安装成功
+      </p>
     </div>
 
     <!-- 拖拽列表容器 -->
@@ -18,18 +20,26 @@
         <div class="drag-item">
           <!-- 拖拽手柄（只有通过手柄才能拖动） -->
           <div class="drag-handle">
-            <Icon icon="ep:rank" class="handle-icon" />
+            <Icon
+              icon="ep:rank"
+              class="handle-icon"
+            />
           </div>
 
           <!-- 卡片内容 -->
           <div class="card-content">
             <div class="card-header">
               <span class="card-title">{{ element.title }}</span>
-              <el-tag :type="element.status === 'active' ? 'success' : 'info'" size="small">
+              <el-tag
+                :type="element.status === 'active' ? 'success' : 'info'"
+                size="small"
+              >
                 {{ element.status === 'active' ? '启用' : '禁用' }}
               </el-tag>
             </div>
-            <p class="card-desc">{{ element.description }}</p>
+            <p class="card-desc">
+              {{ element.description }}
+            </p>
             <div class="card-meta">
               <span>排序: {{ index + 1 }}</span>
               <span>ID: {{ element.id }}</span>
@@ -53,16 +63,31 @@
 
     <!-- 操作栏 -->
     <div class="demo-actions">
-      <el-button type="primary" @click="addItem">
-        <Icon icon="ep:plus" style="margin-right: 4px;" />
+      <el-button
+        type="primary"
+        @click="addItem"
+      >
+        <Icon
+          icon="ep:plus"
+          style="margin-right: 4px;"
+        />
         添加项
       </el-button>
       <el-button @click="resetList">
-        <Icon icon="ep:refresh-left" style="margin-right: 4px;" />
+        <Icon
+          icon="ep:refresh-left"
+          style="margin-right: 4px;"
+        />
         重置列表
       </el-button>
-      <el-button type="success" @click="logOrder">
-        <Icon icon="ep:document" style="margin-right: 4px;" />
+      <el-button
+        type="success"
+        @click="logOrder"
+      >
+        <Icon
+          icon="ep:document"
+          style="margin-right: 4px;"
+        />
         打印当前顺序
       </el-button>
     </div>

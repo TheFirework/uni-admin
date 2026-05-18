@@ -15,7 +15,10 @@
       :show-after="300"
       :hide-after="2000"
     >
-      <Icon icon="mdi:information-outline" class="help-icon" />
+      <Icon
+        icon="mdi:information-outline"
+        class="help-icon"
+      />
     </el-tooltip>
   </div>
 </template>

@@ -3,11 +3,25 @@
     <h1>仪表盘</h1>
     <p>欢迎来到 Uni-Admin 管理后台！</p>
 
-    <el-row :gutter="20" class="stat-cards">
-      <el-col :span="6" v-for="(item, index) in stats" :key="index">
-        <el-card shadow="hover" class="stat-card">
-          <div class="stat-value">{{ item.value }}</div>
-          <div class="stat-label">{{ item.label }}</div>
+    <el-row
+      :gutter="20"
+      class="stat-cards"
+    >
+      <el-col
+        v-for="(item, index) in stats"
+        :key="index"
+        :span="6"
+      >
+        <el-card
+          shadow="hover"
+          class="stat-card"
+        >
+          <div class="stat-value">
+            {{ item.value }}
+          </div>
+          <div class="stat-label">
+            {{ item.label }}
+          </div>
         </el-card>
       </el-col>
     </el-row>

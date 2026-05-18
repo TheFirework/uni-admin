@@ -1,0 +1,22 @@
+schema: spec-driven
+
+title: "智能路由系统改造"
+description: |
+  实现前端静态路由 + 多级菜单缓存 + 智能预加载的三位一体路由系统
+  支持 frontend/backend/mixed 三种模式切换，L1+L2 双层缓存，悬停预加载
+
+owner: frontend-team
+status: planning
+priority: high
+
+# 影响范围
+affected:
+  - apps/web/src/router/**
+  - apps/web/src/stores/menu.store.ts
+  - apps/web/src/utils/cache/**
+  - apps/web/src/utils/prefetch/**
+  - apps/web/src/config/**
+
+# 依赖的 specs（如果有）
+# depends_on:
+#   - spec:enterprise-admin-layout-framework

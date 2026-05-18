@@ -3,19 +3,22 @@ import { ref, computed } from 'vue';
 import { ElMessage } from 'element-plus';
 import * as authApi from '@/api/modules/auth.api';
 import type { LoginDTO, LoginResult } from '@/api/modules/auth.api';
+import { storage } from '@/utils/storage';
+import router from '@/router';
+import { setRoutesLoadedStatus } from '@/router/guards';
 
 // 用户信息接口（从 LoginResult 提取）
 export interface UserInfo {
-  id: string;
+  userId: string;
   username: string;
-  nickname: string;
-  roles: string[];
+  email: string;
+  roles: number[];
 }
 
 // 认证状态接口
 interface AuthState {
   user: UserInfo | null;        // 当前用户信息
-  accessToken: string | null;    // AccessToken（内存存储）
+  accessToken: string | null;    // AccessToken（内存存储，用于 HTTP 请求头）
   isAuthenticated: boolean;       // 认证状态标记
   rememberMe: boolean;           // 是否记住登录状态
 }
@@ -36,11 +39,11 @@ export const useAuthStore = defineStore('auth', {
     roles: (state): string[] => state.user?.roles ?? [],
 
     // 检查是否拥有指定角色
-    hasRole: (state) => (role: boolean): boolean => {
+    hasRole: (state) => (role: number): boolean => {
       return state.user?.roles.includes(role) ?? false;
     },
 
-    // 检查是否已认证
+    // 检查是否已认证（同时检查内存和 Storage）
     isLoggedIn: (state): boolean => state.isAuthenticated && !!state.accessToken,
   },
 
@@ -53,21 +56,42 @@ export const useAuthStore = defineStore('auth', {
     async login(credentials: LoginDTO): Promise<LoginResult> {
       try {
         // 调用登录 API（skipToken: true，因为还未登录）
+        console.log('[Auth] 开始登录请求...');
         const result: LoginResult = await authApi.login(credentials);
+        console.log('[Auth] API 返回成功:', { user: result.user, hasToken: !!result.accessToken });
 
         // 更新 Store 状态
         this.user = result.user as UserInfo;
         this.accessToken = result.accessToken;
         this.isAuthenticated = true;
+        console.log('[Auth] Store 状态已更新');
 
-        // 如果浏览器支持 Credential API 且用户勾选了"记住我"，提示保存凭证
-        if (this.rememberMe && 'PasswordCredential' in window) {
-          this.saveCredentialToBrowser(credentials.username, credentials.password);
+        // 将 Token 通过 Storage 加密持久化存储
+        try {
+          await storage.set('token', result.accessToken, {
+            encrypt: true,
+            namespace: 'auth',
+          });
+          console.log('[Auth] Token 已加密存储');
+        } catch (storageError) {
+          console.error('[Auth] Token 存储失败:', storageError);
+          // 存储失败不阻塞登录流程，仅警告
         }
 
-        console.log('[Auth] 登录成功，用户:', result.user.username);
+        // 存储用户信息到 Storage（便于刷新后恢复）
+        try {
+          await storage.set('userInfo', result.user, {
+            namespace: 'user',
+          });
+          console.log('[Auth] 用户信息已存储');
+        } catch (storageError) {
+          console.error('[Auth] 用户信息存储失败:', storageError);
+        }
+
+        console.log('[Auth] 登录流程完成，用户:', result.user.username);
         return result;
       } catch (error: any) {
+        console.error('[Auth] 登录过程出错:', error);
         // 清除可能的部分状态
         this.logout(false); // 不调用登出 API，仅清除本地状态
 
@@ -92,13 +116,22 @@ export const useAuthStore = defineStore('auth', {
       } finally {
         // 无论成功失败，都清除本地认证状态
         this.resetAuthState();
-        console.log('[Auth] 已登出，认证状态已清除');
+
+        // 【新增】联动清空 Storage 中的关联命名空间
+        storage.clearNamespace('auth');   // 清除 Token
+        storage.clearNamespace('user');   // 清除用户信息
+        storage.clearNamespace('tags');   // 清除标签临时状态
+
+        // 【新增】重置动态路由加载状态
+        setRoutesLoadedStatus(false);
+
+        console.log('[Auth] 已登出，认证状态和 Storage 已清除');
       }
     },
 
     /**
      * 检查当前认证状态（用于页面刷新后恢复会话）
-     * 尝试使用 RefreshToken 恢复登录状态
+     * 【修改】改为从 Storage 读取 Token 判断登录状态（替代纯内存判断）
      * @returns Promise<boolean> 是否恢复成功
      */
     async checkAuth(): Promise<boolean> {
@@ -107,27 +140,37 @@ export const useAuthStore = defineStore('auth', {
         return true;
       }
 
-      // 尝试检查是否存在 RefreshToken Cookie（由后端设置）
-      // 注意：前端无法直接读取 HttpOnly Cookie，但可以通过刷新 Token 接口间接检测
+      // 【新增】尝试从 Storage 读取 Token 判断登录状态
       try {
-        // 尝试调用 refreshToken 接口（如果 RefreshToken Cookie 存在且有效）
-        const result = await authApi.refreshToken('');
+        const storedToken = await storage.get<string>('token', {
+          defaultValue: '',
+          namespace: 'auth',
+          encrypt: true,
+        });
 
-        // 如果成功，说明 RefreshToken 有效，更新状态
-        if (result?.accessToken) {
-          // 需要获取完整的用户信息（这里简化处理，实际可能需要额外的 /auth/me 接口）
-          this.accessToken = result.accessToken;
-          this.isAuthenticated = true;
-
-          // TODO: 可能需要额外调用来获取完整的 user 信息
-          console.log('[Auth] 通过 RefreshToken 恢复会话成功');
-          return true;
+        if (!storedToken) {
+          return false;
         }
 
-        return false;
+        // 从 Storage 恢复用户信息
+        const storedUser = await storage.get<UserInfo>('userInfo', {
+          defaultValue: null,
+          namespace: 'user',
+        });
+
+        if (storedUser) {
+          this.user = storedUser;
+        }
+
+        // 恢复 Token 到内存（用于 HTTP 请求头）
+        this.accessToken = storedToken;
+        this.isAuthenticated = true;
+
+        console.log('[Auth] 通过 Storage 恢复会话成功');
+        return true;
       } catch (error) {
-        // RefreshToken 无效或不存在，保持未认证状态
-        console.info('[Auth] 无法恢复会话（无有效 RefreshToken）');
+        // Storage 读取失败，保持未认证状态
+        console.warn('[Auth] 无法从 Storage 恢复会话:', error);
         return false;
       }
     },

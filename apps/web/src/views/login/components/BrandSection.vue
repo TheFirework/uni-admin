@@ -3,21 +3,30 @@
     <div class="brand-content">
       <!-- 图标插槽（默认使用 Iconify） -->
       <slot name="icon">
-        <Icon :icon="icon" class="brand-icon" />
+        <Icon
+          :icon="icon"
+          class="brand-icon"
+        />
       </slot>
 
       <!-- 产品名称 -->
-      <h1 class="brand-title">{{ title }}</h1>
+      <h1 class="brand-title">
+        {{ title }}
+      </h1>
 
       <!-- Slogan 副标题 -->
-      <p class="brand-slogan">{{ slogan }}</p>
+      <p class="brand-slogan">
+        {{ slogan }}
+      </p>
 
       <!-- 默认插槽（自定义内容） -->
       <slot />
 
       <!-- 底部版权信息 -->
       <slot name="footer">
-        <p class="copyright">© {{ currentYear }} {{ title }}. All rights reserved.</p>
+        <p class="copyright">
+          © {{ currentYear }} {{ title }}. All rights reserved.
+        </p>
       </slot>
     </div>
   </aside>

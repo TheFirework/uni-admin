@@ -6,55 +6,56 @@
       <p class="card-subtitle">{{ subtitle }}</p>
     </header>
 
-    <!-- 登录表单 -->
-    <Form class="login-form" @submit="handleSubmit">
+    <!-- 登录表单（Element Plus 原生验证） -->
+    <el-form
+      ref="formRef"
+      :model="formData"
+      :rules="formRules"
+      class="login-form"
+      @submit.prevent="handleSubmit"
+    >
       <!-- 用户名输入框 -->
-      <Field name="username" v-slot="{ field }">
-        <el-form-item class="form-item">
-          <el-input v-bind="field" placeholder="请输入用户名" size="large" clearable :autocomplete="autocompleteUsername">
-            <template #prefix>
-              <Icon icon="mdi:account-outline" />
-            </template>
-          </el-input>
-
-          <!-- 内联错误提示 -->
-          <transition name="error-fade">
-            <div v-if="fieldErrors.username" class="field-error">
-              <Icon icon="mdi:alert-circle-outline" class="error-icon" />
-              <span>{{ fieldErrors.username }}</span>
-            </div>
-          </transition>
-        </el-form-item>
-      </Field>
+      <el-form-item prop="username" class="form-item">
+        <el-input
+          v-model="formData.username"
+          placeholder="请输入用户名"
+          size="large"
+          clearable
+          :autocomplete="autocompleteUsername"
+        >
+          <template #prefix>
+            <Icon icon="mdi:account-outline" class="input-icon" />
+          </template>
+        </el-input>
+      </el-form-item>
 
       <!-- 密码输入框 -->
-      <Field name="password" v-slot="{ field }">
-        <el-form-item class="form-item">
-          <el-input v-bind="field" type="password" placeholder="请输入密码" size="large" show-password clearable
-            :autocomplete="autocompletePassword">
-            <template #prefix>
-              <Icon icon="mdi:lock-outline" />
-            </template>
-          </el-input>
-
-          <!-- 内联错误提示 -->
-          <transition name="error-fade">
-            <div v-if="fieldErrors.password" class="field-error">
-              <Icon icon="mdi:alert-circle-outline" class="error-icon" />
-              <span>{{ fieldErrors.password }}</span>
-            </div>
-          </transition>
-        </el-form-item>
-      </Field>
+      <el-form-item prop="password" class="form-item">
+        <el-input
+          v-model="formData.password"
+          type="password"
+          placeholder="请输入密码"
+          size="large"
+          show-password
+          clearable
+          :autocomplete="autocompletePassword"
+        >
+          <template #prefix>
+            <Icon icon="mdi:lock-outline" class="input-icon" />
+          </template>
+        </el-input>
+      </el-form-item>
 
       <!-- 验证码输入框（条件显示） -->
       <Transition name="fade">
         <div v-if="showCaptcha" class="captcha-section">
           <label class="captcha-label">验证码</label>
-          <Field name="captcha" v-slot="{ field }">
-            <CaptchaInput :model-value="field.value" @update:model-value="field.onChange" :captcha-image="captchaImage"
-              :loading="captchaLoading" @refresh="$emit('captcha-refresh')" />
-          </Field>
+          <CaptchaInput
+            v-model="formData.captcha"
+            :captcha-image="captchaImage"
+            :loading="captchaLoading"
+            @refresh="$emit('captcha-refresh')"
+          />
         </div>
       </Transition>
 
@@ -62,48 +63,40 @@
       <div class="options-row">
         <RememberMe v-model="rememberMe" />
 
-        <a href="#" class="forgot-link" role="button" aria-label="忘记密码，点击获取重置密码帮助"
-          @click.prevent="$emit('forgot-password')">
+        <a
+          href="#"
+          class="forgot-link"
+          role="button"
+          aria-label="忘记密码，点击获取重置密码帮助"
+          @click.prevent="$emit('forgot-password')"
+        >
           忘记密码？
         </a>
       </div>
 
       <!-- 登录按钮 -->
-      <el-button type="primary" size="large" class="login-button" :loading="loading" :disabled="loading"
-        :aria-busy="loading" native-type="submit">
+      <el-button
+        type="primary"
+        size="large"
+        class="login-button"
+        :loading="loading"
+        :disabled="loading"
+        :aria-busy="loading"
+        native-type="submit"
+      >
         {{ loading ? '登录中...' : '登录' }}
       </el-button>
-    </Form>
+    </el-form>
   </div>
 </template>
 
 <script setup lang="ts">
-import { ref, computed, reactive } from 'vue';
-import { Form, Field } from 'vee-validate';
+import { ref, reactive, computed } from 'vue';
+import type { FormInstance, FormRules } from 'element-plus';
 import { Icon } from '@iconify/vue';
-import { ElButton, ElFormItem } from 'element-plus';
-import { z } from 'zod';
+import { ElButton, ElFormItem, ElForm } from 'element-plus';
 import CaptchaInput from './CaptchaInput.vue';
 import RememberMe from './RememberMe.vue';
-
-/**
- * LoginSchema 定义（符合 Zod 规范）
- */
-const LoginSchema = z.object({
-  username: z.string().min(1, '用户名不能为空').trim(),
-  password: z.string().min(1, '密码不能为空'),
-  captcha: z.string().optional(),
-});
-
-// 将 Zod schema 转换为 VeeValidate 可用的格式（提取错误映射）
-const getZodErrorMessage = (fieldName: string, defaultValue: string = '验证失败') => {
-  const fieldMap: Record<string, string> = {
-    username: '用户名不能为空',
-    password: '密码不能为空',
-    captcha: '验证码格式错误'
-  };
-  return fieldMap[fieldName] || defaultValue;
-};
 
 /**
  * LoginCard 组件 Props
@@ -132,50 +125,59 @@ const emit = defineEmits<{
   'forgot-password': [];
 }>();
 
+// 表单引用（用于手动触发验证）
+const formRef = ref<FormInstance>();
+
+// 记住登录状态
 const rememberMe = ref(false);
 
-// 字段级错误状态（用于内联显示）
-const fieldErrors = reactive<Record<string, string>>({
+// 表单数据（双向绑定）
+const formData = reactive({
   username: '',
-  password: ''
+  password: '',
+  captcha: '',
 });
 
+// 自动补全属性计算
 const autocompleteUsername = computed(() => (rememberMe.value ? 'username' : 'off'));
 const autocompletePassword = computed(() => (rememberMe.value ? 'current-password' : 'new-password'));
 
 /**
- * 处理表单提交 - vee-validate 自动传入已验证的值
+ * 表单验证规则（Element Plus 原生格式）
  */
-const handleSubmit = (values: Record<string, any>) => {
-  // 先清除之前的错误
-  fieldErrors.username = '';
-  fieldErrors.password = '';
-
-  const result = LoginSchema.safeParse({
-    username: values.username,
-    password: values.password,
-    captcha: values.captcha || undefined,
-  });
-
-  if (!result.success) {
-    // 遍历 Zod 验证错误，设置到对应字段（触发内联错误提示）
-    result.error.issues.forEach((issue) => {
-      const fieldName = issue.path[0] as string;
-      if (fieldName) {
-        // 始终使用友好的中文错误消息（忽略 Zod 原始技术性错误信息）
-        fieldErrors[fieldName] = getZodErrorMessage(fieldName);
-      }
-    });
-    return; // 阻止表单提交
-  }
-
-  emit('submit', {
-    username: result.data.username.trim(),
-    password: result.data.password,
-    captcha: result.data.captcha?.trim(),
-    rememberMe: rememberMe.value,
-  });
+const formRules: FormRules = {
+  username: [
+    { required: true, message: '请输入用户名', trigger: 'blur' },
+    { min: 2, max: 50, message: '用户名长度在 2 到 50 个字符', trigger: 'blur' },
+  ],
+  password: [
+    { required: true, message: '请输入密码', trigger: 'blur' },
+    { min: 6, max: 30, message: '密码长度在 6 到 30 个字符', trigger: 'blur' },
+  ],
 };
+
+/**
+ * 处理表单提交
+ */
+async function handleSubmit(): Promise<void> {
+  if (!formRef.value) return;
+
+  try {
+    // 手动触发表单验证
+    await formRef.value.validate();
+
+    // 验证通过，提交数据
+    emit('submit', {
+      username: formData.username.trim(),
+      password: formData.password,
+      captcha: formData.captcha?.trim(),
+      rememberMe: rememberMe.value,
+    });
+  } catch (error) {
+    // 验证失败（Element Plus 会自动显示错误提示）
+    console.warn('[LoginCard] 表单验证失败:', error);
+  }
+}
 </script>
 
 <style lang="scss" scoped>
@@ -229,31 +231,57 @@ const handleSubmit = (values: Record<string, any>) => {
 .form-item {
   margin-bottom: 0; // 覆盖 Element Plus 默认底部间距
 
+  // 输入框图标样式（确保 prefix 插槽中的图标正确显示）
+  .input-icon {
+    font-size: 18px;
+    color: #9CA3AF; // 灰色图标
+    transition: color 0.2s ease;
+  }
+
+  // 聚焦时图标变为主色调
+  :deep(.el-input__wrapper:focus-within) {
+    .input-icon {
+      color: #5B9BD5; // 主色调蓝色
+    }
+  }
+
   // 输入框聚焦效果增强
   :deep(.el-input__wrapper) {
-    transition: all 0.2s ease; // 平滑过渡动画
+    transition: all 0.2s ease;
 
-    // 聚焦状态：边框变色 + 柔和阴影 + 微上浮
     &:focus-within {
-      border-color: #5B9BD5; // 主色调蓝色
-      box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15); // 柔和的聚焦环
-      transform: translateY(-1px); // 微妙的上浮效果
+      border-color: #5B9BD5;
+      box-shadow: 0 0 0 3px rgba(91, 155, 213, 0.15);
+      transform: translateY(-1px);
     }
   }
 
-  // 清空图标显示优化（hover 或 focus 时可见）
-  :deep(.el-input:hover .el-input__clear),
-  :deep(.el-input__wrapper:focus-within ~ .el-input__suffix .el-input__clear) {
-    visibility: visible !important; // 覆盖 Element Plus 内联样式
+  // 密码切换按钮样式优化
+  :deep(.el-input__password) {
+    font-size: 16px;
+    color: #9CA3AF;
+    cursor: pointer;
+    transition: color 0.2s ease;
+
+    &:hover {
+      color: #5B9BD5;
+    }
   }
 
-  // 输入框高度响应式调整（移动端触摸友好）
+  // 输入框高度响应式调整
   :deep(.el-input__inner) {
-    height: 48px; // 默认桌面端高度
+    height: 48px;
 
     @media (max-width: 576px) {
-      height: 52px; // 移动端增大至 52px（符合触摸友好标准 ≥44px）
+      height: 52px;
     }
+  }
+
+  // 错误提示样式优化
+  :deep(.el-form-item__error) {
+    padding-top: 4px;
+    font-size: 13px;
+    color: #EF4444;
   }
 }
 
@@ -310,32 +338,5 @@ const handleSubmit = (values: Record<string, any>) => {
 .fade-leave-to {
   opacity: 0;
   transform: translateY(-10px);
-}
-
-// 内联错误提示样式
-.field-error {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 6px;
-  font-size: 13px;
-  color: #EF4444; // 错误红色
-
-  .error-icon {
-    font-size: 16px;
-    flex-shrink: 0; // 防止图标被压缩
-  }
-}
-
-// 错误提示淡入淡出动画
-.error-fade-enter-active,
-.error-fade-leave-active {
-  transition: all 0.2s ease;
-}
-
-.error-fade-enter-from,
-.error-fade-leave-to {
-  opacity: 0;
-  transform: translateY(-4px);
 }
 </style>
