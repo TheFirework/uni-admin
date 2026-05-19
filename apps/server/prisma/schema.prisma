@@ -17,8 +17,7 @@ model User {
   email     String    @unique @map("email") @db.VarChar(100)
   nickname  String?   @map("nickname") @db.VarChar(50)
   avatar    String?   @map("avatar") @db.VarChar(255)
-  roleIds   String?   @map("role_ids") @db.Text
-  status    Int       @default(1) @map("status") // 0: 禁用, 1: 启用
+  status    Int       @default(1) @map("status")
   password  String    @map("password") @db.VarChar(255)
   createdAt DateTime  @default(now()) @map("created_at")
   updatedAt DateTime  @updatedAt @map("updated_at")
@@ -32,38 +31,38 @@ model Role {
   name        String   @unique @map("name") @db.VarChar(50)
   code        String   @unique @map("code") @db.VarChar(50)
   description String?  @map("description") @db.VarChar(255)
-  permissions String?  @map("permissions") @db.Text
   status      Int      @default(1) @map("status")
-  createdAt   DateTime @default(now()) @map("created_at")
-  updatedAt   DateTime @updatedAt @map("updated_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
 
   @@map("roles")
 }
 
-// 权限模型
-model Permission {
-  id       Int     @id @default(autoincrement())
-  name     String  @unique @map("name") @db.VarChar(100)
-  code     String  @unique @map("code") @db.VarChar(100)
-  type     Int     @map("type") // 0: 菜单, 1: 按钮, 2: API
-  resource String? @map("resource") @db.VarChar(100)
-  action   String? @map("action") @db.VarChar(50)
-  status   Int     @default(1) @map("status")
-
-  @@map("permissions")
-}
-
-// 菜单模型
+// 菜单模型（适配前端 MenuDTO 结构）
+// permission 字段存储访问权限标识，格式：JSON数组如 ["admin","system:user:list"]
 model Menu {
-  id        Int      @id @default(autoincrement())
-  parentId  Int?     @map("parent_id")
-  name      String   @map("name") @db.VarChar(50)
-  path      String?  @map("path") @db.VarChar(255)
-  icon      String?  @map("icon") @db.VarChar(50)
-  component String?  @map("component") @db.VarChar(255)
-  sort      Int      @default(0) @map("sort")
-  visible   Boolean  @default(true) @map("visible")
-  status    Int      @default(1) @map("status")
+  id          Int      @id @default(autoincrement())
+  parentId    Int?     @map("parent_id")
+  name        String   @unique @map("name") @db.VarChar(100)
+  path        String?  @map("path") @db.VarChar(255)
+  component   String?  @map("component") @db.VarChar(255)
+  redirect    String?  @map("redirect") @db.VarChar(255)
+  routeName   String?  @map("route_name") @db.VarChar(100)
+  icon        String?  @map("icon") @db.VarChar(100)
+  title       String?  @map("title") @db.VarChar(100)
+  hidden      Boolean  @default(false) @map("hidden")
+  affix       Boolean  @default(false) @map("affix")
+  noCache     Boolean  @default(false) @map("no_cache")
+  externalLink String? @map("external_link") @db.VarChar(500)
+  permission  String?  @map("permission") @db.Text // JSON: ["admin","system:user:list"] → meta.access
+  sort        Int      @default(0) @map("sort")
+  visible     Boolean  @default(true) @map("visible")
+  status      Int      @default(1) @map("status")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  updatedAt   DateTime  @updatedAt @map("updated_at")
+
+  parent     Menu?    @relation("MenuParent", fields: [parentId], references: [id])
+  children   Menu[]   @relation("MenuParent")
 
   @@map("menus")
 }
@@ -83,12 +82,12 @@ model Dictionary {
 
 // 系统配置模型
 model SystemConfig {
-  id        Int      @id @default(autoincrement())
-  configKey String   @unique @map("config_key") @db.VarChar(100)
-  configValue String @map("config_value") @db.Text
-  groupName String   @map("group_name") @db.VarChar(50)
-  remark    String?  @map("remark") @db.Text
-  status    Int      @default(1) @map("status")
+  id         Int      @id @default(autoincrement())
+  configKey  String   @unique @map("config_key") @db.VarChar(100)
+  configValue String  @map("config_value") @db.Text
+  groupName  String   @map("group_name") @db.VarChar(50)
+  remark     String?  @map("remark") @db.Text
+  status     Int      @default(1) @map("status")
 
   @@map("system_config")
 }

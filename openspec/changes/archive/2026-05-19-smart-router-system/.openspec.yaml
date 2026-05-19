@@ -6,7 +6,7 @@ description: |
   支持 frontend/backend/mixed 三种模式切换，L1+L2 双层缓存，悬停预加载
 
 owner: frontend-team
-status: planning
+status: completed
 priority: high
 
 # 影响范围

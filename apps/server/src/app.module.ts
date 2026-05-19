@@ -6,6 +6,7 @@ import { AppController } from './common/app.controller.js';
 import { LoggerService } from './common/logger/logger.service.js';
 import { RedisCacheService } from './common/cache/redis-cache.service.js';
 import { AuthModule } from './modules/auth/auth.module.js';
+import { MenuModule } from './modules/menu/menu.module.js';
 import { validationSchema } from './config/env.validation.js';
 import { getConfig } from './config/env.config.js';
 
@@ -101,6 +102,8 @@ import { getConfig } from './config/env.config.js';
 
     // 注册认证模块（提供 JWT 登录、刷新、登出功能）
     AuthModule,
+    // 注册菜单模块（提供 /api/v1/system/menus 路由菜单 API）
+    MenuModule,
   ],
   controllers: [AppController],
   providers: [

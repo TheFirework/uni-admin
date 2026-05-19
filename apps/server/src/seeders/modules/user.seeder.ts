@@ -6,7 +6,7 @@
  * 安全说明：
  *   - 密码使用 bcrypt 加密存储（salt rounds = 10）
  *   - 默认密码仅用于开发环境，生产环境必须修改
- *   - roleIds 使用 JSON 格式存储关联的角色 ID 列表
+ *   - 角色信息通过用户名判断（admin/user），无需 roleIds 字段
  */
 
 import bcrypt from 'bcrypt';
@@ -43,16 +43,13 @@ export class UserSeeder implements ISeeder {
 
   /**
    * 填充用户数据
-   * 依赖：需要先执行 RoleSeeder 以获取角色 ID
+   * 说明：
+   *   - User 表无 roleIds 字段（已从 Schema 移除）
+   *   - 角色通过 username 判断（admin → admin角色，其他 → user角色）
+   *   - 后续集成 RBAC 时可添加 UserRole 关联表
    */
   async seed(prisma: PrismaClient): Promise<SeedResult> {
     console.log('👤 创建默认用户...');
-
-    // 获取角色映射（code -> id）
-    const roles = await prisma.role.findMany({
-      select: { id: true, code: true },
-    });
-    const roleMap = new Map(roles.map((r) => [r.code, r.id]));
 
     // 加密密码
     const passwords = {
@@ -60,10 +57,9 @@ export class UserSeeder implements ISeeder {
       user: await bcrypt.hash(DEFAULT_PASSWORDS.user, BCRYPT_SALT_ROUNDS),
     };
 
-    // 创建用户
+    // 创建用户（不包含 roleIds 字段）
     const results = await Promise.all(
       USERS_TEMPLATE.map(async (userTemplate) => {
-        const roleId = roleMap.get(userTemplate.roleCode);
         const password = userTemplate.roleCode === 'admin' ? passwords.admin : passwords.user;
 
         return prisma.user.upsert({
@@ -74,7 +70,6 @@ export class UserSeeder implements ISeeder {
             email: userTemplate.email,
             nickname: userTemplate.nickname,
             password,
-            roleIds: JSON.stringify([roleId]),
             avatar: null,
             status: 1,
           },

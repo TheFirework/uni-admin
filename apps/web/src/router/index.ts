@@ -7,7 +7,7 @@ const publicRoutes: RouteRecordRaw[] = [
   {
     path: '/login',
     name: 'Login',
-    component: () => import('@/views/login/index.vue'),
+    component: () => import('@/views/auth/login/index.vue'),
     meta: { requiresAuth: false, title: '登录' },
   },
   {
@@ -19,15 +19,9 @@ const publicRoutes: RouteRecordRaw[] = [
 ];
 
 // 受保护路由（需要认证，包裹在 BasicLayout 中）
-// 注意：这些是基础路由，后续会被动态路由补充
-const protectedRoutes: RouteRecordRaw[] = [
-  {
-    path: '/',
-    name: 'Dashboard',
-    component: () => import('@/views/dashboard/index.vue'),
-    meta: { requiresAuth: true, title: '仪表盘', affix: true },
-  },
-];
+// 注意：不再预定义静态路由，完全由动态路由系统控制
+// 动态路由会在应用启动后通过 menu.store.ts 从后端加载并注册
+const protectedRoutes: RouteRecordRaw[] = [];
 
 // 路由配置
 const router = createRouter({
@@ -40,19 +34,17 @@ const router = createRouter({
     {
       path: '/',
       name: 'BasicLayout', // 添加路由名称，供动态路由 addRoute 使用
+      // 注意：不设置 redirect，由 dynamicRoute 中间件处理首次导航
+      // 如果在这里设置 redirect: '/dashboard'，会在动态路由加载前就触发重定向
+      // 导致 /dashboard 还未注册就被访问，最终显示 404
       component: () => import('@/layouts/BasicLayout.vue'),
-      redirect: '/dashboard', // 默认重定向到仪表盘
       children: [
-        // 基础受保护路由
+        // 基础受保护路由（现在为空，完全由动态路由控制）
         ...protectedRoutes,
 
-        // 404 兜底路由（Layout 的子路由，确保有侧边栏和顶栏）
-        {
-          path: '/:pathMatch(.*)*',
-          name: 'NotFound',
-          component: () => import('@/views/error/404.vue'),
-          meta: { requiresAuth: true, title: '404' },
-        },
+        // 注意：404 兜底路由不再在静态定义中添加
+        // 改为由 menu.store.ts 的 registerDynamicRoutes() 动态添加
+        // 这确保 404 始终在所有动态路由之后，避免拦截正常路由
       ],
     },
 

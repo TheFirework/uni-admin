@@ -3,44 +3,39 @@ import { PrismaClient } from '@prisma/client';
 import * as bcrypt from 'bcrypt';
 
 /**
- * 用户种子数据
- * 初始化默认管理员和测试用户
+ * 用户种子数据模块
+ *
+ * 职责：初始化默认管理员和测试用户账号
+ *
+ * 安全说明：
+ *   - 密码使用 bcrypt 加密存储（salt rounds = 10）
+ *   - 默认密码仅用于开发环境，生产环境必须修改
+ *   - 角色信息通过用户名判断（admin/user），无需 roleIds 字段
  */
 export class UserSeeder implements Seeder {
   private prisma = new PrismaClient();
 
   /**
    * 插入用户数据
-   * 密码使用 bcrypt 加密存储
-   * 自动关联到对应角色
+   * 说明：
+   *   - User 表无 roleIds 字段（已从 Schema 移除）
+   *   - 角色通过 username 判断（admin → admin角色，其他 → user角色）
+   *   - 后续集成 RBAC 时可添加 UserRole 关联表
    */
   async seed() {
     console.log('🌱 开始播种用户数据...');
-
-    // 获取角色信息（用于关联用户）
-    const adminRole = await this.prisma.role.findUnique({
-      where: { code: 'admin' },
-    });
-    const userRole = await this.prisma.role.findUnique({
-      where: { code: 'user' },
-    });
-
-    if (!adminRole || !userRole) {
-      throw new Error('❌ 角色数据不存在，请先运行 RoleSeeder');
-    }
 
     // 生成加密密码（bcrypt，salt rounds = 10）
     const adminPassword = await bcrypt.hash('Admin@123456', 10);
     const testUserPassword = await bcrypt.hash('Test@123456', 10);
 
-    // 定义初始用户列表
+    // 定义初始用户列表（不包含 roleIds 字段）
     const users = [
       {
         username: 'admin',
         email: 'admin@uni-admin.com',
         nickname: '系统管理员',
         password: adminPassword,
-        roleIds: JSON.stringify([adminRole.id]),  // 关联管理员角色
         status: 1,  // 启用状态
       },
       {
@@ -48,7 +43,6 @@ export class UserSeeder implements Seeder {
         email: 'testuser@uni-admin.com',
         nickname: '测试用户',
         password: testUserPassword,
-        roleIds: JSON.stringify([userRole.id]),  // 关联普通用户角色
         status: 1,  // 启用状态
       },
     ];
@@ -61,7 +55,6 @@ export class UserSeeder implements Seeder {
           email: user.email,
           nickname: user.nickname,
           password: user.password,  // 每次重置时更新密码
-          roleIds: user.roleIds,
           status: user.status,
         },
         create: user,

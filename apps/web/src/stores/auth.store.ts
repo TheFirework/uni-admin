@@ -5,7 +5,6 @@ import * as authApi from '@/api/modules/auth.api';
 import type { LoginDTO, LoginResult } from '@/api/modules/auth.api';
 import { storage } from '@/utils/storage';
 import router from '@/router';
-import { setRoutesLoadedStatus } from '@/router/guards';
 
 // 用户信息接口（从 LoginResult 提取）
 export interface UserInfo {
@@ -122,8 +121,10 @@ export const useAuthStore = defineStore('auth', {
         storage.clearNamespace('user');   // 清除用户信息
         storage.clearNamespace('tags');   // 清除标签临时状态
 
-        // 【新增】重置动态路由加载状态
-        setRoutesLoadedStatus(false);
+        // 【新增】重置菜单 Store 状态（统一通过 menuStore 管理）
+        const { useMenuStore } = await import('@/stores/menu.store');
+        const menuStore = useMenuStore();
+        menuStore.resetMenuState();
 
         console.log('[Auth] 已登出，认证状态和 Storage 已清除');
       }

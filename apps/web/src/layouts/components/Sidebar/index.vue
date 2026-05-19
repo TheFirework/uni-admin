@@ -44,32 +44,61 @@
 </template>
 
 <script setup lang="ts">
-import { computed } from 'vue';
-import { useRoute } from 'vue-router';
+import { computed, onMounted, onUnmounted, nextTick } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
 import { useMenuStore } from '@/stores/menu.store';
+import { hoverPrefetcher } from '@/utils/prefetch/HoverPrefetcher';
+import { routerConfig } from '@/config/router.config';
 import MenuItem from './MenuItem.vue';
 
-// 菜单 Store
 const menuStore = useMenuStore();
-
-// 当前路由实例
 const route = useRoute();
+const router = useRouter();
 
-// 侧边栏折叠状态（从 store 读取）
 const isCollapsed = computed(() => menuStore.isCollapsed);
 
-// 当前激活的菜单项（基于当前路由路径）
 const activeMenu = computed((): string => {
   return route.path;
 });
 
-/**
- * 菜单列表（优先使用动态数据，否则使用空数组）
- * 注意：如果菜单未加载完成，这里会显示空菜单
- * 实际场景中，BasicLayout 会先显示骨架屏，等待菜单加载完成后再渲染
- */
 const menuList = computed(() => {
   return menuStore.visibleMenus;
+});
+
+function bindPrefetchEvents(): void {
+  if (!routerConfig.prefetchEnabled) return;
+
+  const menuItems = document.querySelectorAll('.el-menu-item[data-path]');
+
+  menuItems.forEach((item) => {
+    const path = item.getAttribute('data-path');
+    if (!path) return;
+
+    try {
+      const resolved = router.resolve(path);
+      const matched = resolved.matched;
+      if (!matched || matched.length === 0) return;
+
+      const lastRoute = matched[matched.length - 1];
+      const component = lastRoute.components?.default;
+
+      if (typeof component === 'function') {
+        hoverPrefetcher.bind(item, path, component as () => Promise<unknown>);
+      }
+    } catch {
+      // 路由解析失败时跳过
+    }
+  });
+}
+
+onMounted(() => {
+  nextTick(() => {
+    bindPrefetchEvents();
+  });
+});
+
+onUnmounted(() => {
+  hoverPrefetcher.destroy();
 });
 </script>
 

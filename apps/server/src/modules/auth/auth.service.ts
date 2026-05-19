@@ -146,7 +146,7 @@ export class AuthService {
           { status: 1 }  // 仅查询启用状态的用户
         ]
       },
-      select: { id: true, username: true, email: true, password: true, roleIds: true }
+      select: { id: true, username: true, email: true, password: true }
     });
 
     if (!user) {
@@ -159,8 +159,9 @@ export class AuthService {
       throw new UnauthorizedException('用户名或密码错误');
     }
 
-    // 解析角色信息
-    const roles = user.roleIds ? JSON.parse(user.roleIds) : ['user'];
+    // TODO: 集成 RBAC 后从 UserRole 关联表查询真实角色
+    // 当前版本：根据用户名判断默认角色（admin/user）
+    const roles = username === 'admin' ? ['admin'] : ['user'];
 
     // 步骤3 - 生成双 Token
     const accessToken = this.generateAccessToken(String(user.id), user.username, roles);

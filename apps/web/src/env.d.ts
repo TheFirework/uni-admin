@@ -1,22 +1,46 @@
-/// <reference types="vite/client" />
+/**
+ * Vue 单文件组件类型声明
+ *
+ * 让 TypeScript 识别 .vue 文件的导入
+ * 解决 "找不到模块 xxx.vue 或其相应的类型声明" 错误
+ *
+ * 使用方式：
+ *   import Foo from './Foo.vue'  // ✅ 不再报错
+ */
 
-interface ImportMetaEnv {
-  // ====== 应用基础配置 ======
-  readonly VITE_APP_TITLE: string;
-  readonly VITE_APP_ENV: 'development' | 'test' | 'production';
+declare module '*.vue' {
+  import type { DefineComponent } from 'vue';
 
-  // ====== API 服务配置 ======
-  readonly VITE_API_BASE_URL: string;
-  readonly VITE_API_TIMEOUT: string;
-
-  // ====== 功能开关 ======
-  readonly VITE_ENABLE_DEVTOOLS: string;
-
-  // ====== 构建元数据（由 vite.config.ts define 注入） ======
-  readonly VITE_BUILD_VERSION: string;
-  readonly VITE_BUILD_TIME: string;
+  const component: DefineComponent<{}, {}, any>;
+  export default component;
 }
 
-interface ImportMeta {
-  readonly env: ImportMetaEnv;
+declare module '*.svg' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.png' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.jpg' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.jpeg' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.gif' {
+  const content: string;
+  export default content;
+}
+
+declare module '*.webp' {
+  const content: string;
+  export default content;
 }

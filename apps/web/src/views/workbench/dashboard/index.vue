@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <h1>仪表盘</h1>
+    <h1>工作台</h1>
     <p>欢迎来到 Uni-Admin 管理后台！</p>
 
     <el-row
