@@ -13,12 +13,25 @@
 
         <el-divider />
 
-        <el-descriptions :column="1" border>
-          <el-descriptions-item label="技术栈">Vue 3 + TypeScript</el-descriptions-item>
-          <el-descriptions-item label="UI 框架">Element Plus</el-descriptions-item>
-          <el-descriptions-item label="构建工具">Vite</el-descriptions-item>
-          <el-descriptions-item label="状态管理">Pinia</el-descriptions-item>
-          <el-descriptions-item label="路由管理">Vue Router 4</el-descriptions-item>
+        <el-descriptions
+          :column="1"
+          border
+        >
+          <el-descriptions-item label="技术栈">
+            Vue 3 + TypeScript
+          </el-descriptions-item>
+          <el-descriptions-item label="UI 框架">
+            Element Plus
+          </el-descriptions-item>
+          <el-descriptions-item label="构建工具">
+            Vite
+          </el-descriptions-item>
+          <el-descriptions-item label="状态管理">
+            Pinia
+          </el-descriptions-item>
+          <el-descriptions-item label="路由管理">
+            Vue Router 4
+          </el-descriptions-item>
         </el-descriptions>
       </div>
     </el-card>

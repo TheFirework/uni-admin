@@ -2,8 +2,12 @@
   <div class="login-card">
     <!-- 标题区域 -->
     <header class="card-header">
-      <h1 class="card-title">{{ title }}</h1>
-      <p class="card-subtitle">{{ subtitle }}</p>
+      <h1 class="card-title">
+        {{ title }}
+      </h1>
+      <p class="card-subtitle">
+        {{ subtitle }}
+      </p>
     </header>
 
     <!-- 登录表单（Element Plus 原生验证） -->
@@ -15,7 +19,10 @@
       @submit.prevent="handleSubmit"
     >
       <!-- 用户名输入框 -->
-      <el-form-item prop="username" class="form-item">
+      <el-form-item
+        prop="username"
+        class="form-item"
+      >
         <el-input
           v-model="formData.username"
           placeholder="请输入用户名"
@@ -24,13 +31,19 @@
           :autocomplete="autocompleteUsername"
         >
           <template #prefix>
-            <Icon icon="mdi:account-outline" class="input-icon" />
+            <Icon
+              icon="mdi:account-outline"
+              class="input-icon"
+            />
           </template>
         </el-input>
       </el-form-item>
 
       <!-- 密码输入框 -->
-      <el-form-item prop="password" class="form-item">
+      <el-form-item
+        prop="password"
+        class="form-item"
+      >
         <el-input
           v-model="formData.password"
           type="password"
@@ -41,14 +54,20 @@
           :autocomplete="autocompletePassword"
         >
           <template #prefix>
-            <Icon icon="mdi:lock-outline" class="input-icon" />
+            <Icon
+              icon="mdi:lock-outline"
+              class="input-icon"
+            />
           </template>
         </el-input>
       </el-form-item>
 
       <!-- 验证码输入框（条件显示） -->
       <Transition name="fade">
-        <div v-if="showCaptcha" class="captcha-section">
+        <div
+          v-if="showCaptcha"
+          class="captcha-section"
+        >
           <label class="captcha-label">验证码</label>
           <CaptchaInput
             v-model="formData.captcha"

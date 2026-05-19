@@ -10,7 +10,17 @@
 
       <!-- 内容区 -->
       <el-main class="content-main">
-        <router-view v-slot="{ Component, route }">
+        <!-- 路由切换时显示骨架屏 -->
+        <LayoutSkeleton
+          v-if="appStore.actualIsRouteLoading"
+          :model-value="true"
+        />
+
+        <!-- 正常渲染路由组件 -->
+        <router-view
+          v-else
+          v-slot="{ Component, route }"
+        >
           <transition
             name="fade-transform"
             mode="out-in"
@@ -32,14 +42,19 @@
 import { computed, watch, onMounted } from 'vue';
 import Sidebar from './components/Sidebar/index.vue';
 import Header from './components/Header/index.vue';
+import LayoutSkeleton from './components/LayoutSkeleton.vue';
 import { useTagsStore } from '@/stores/tags.store';
 import { useMenuStore } from '@/stores/menu.store';
+import { useAppStore } from '@/stores/app.store';
 
 // 获取 tags store 用于 keep-alive 缓存控制
 const tagsStore = useTagsStore();
 
 // 获取菜单 store 用于监听侧边栏折叠状态
 const menuStore = useMenuStore();
+
+// 获取全局应用状态 Store（用于控制骨架屏显示）
+const appStore = useAppStore();
 
 // 缓存的视图列表（用于 keep-alive include）
 const cachedViews = computed(() => tagsStore.cachedViews);
@@ -63,18 +78,13 @@ watch(
 );
 
 // 组件挂载时初始化
-onMounted(async () => {
-  // 1. 更新侧边栏宽度
+onMounted(() => {
+  // 更新侧边栏宽度（保留此逻辑）
   updateSidebarWidth();
 
-  // 2. 加载菜单数据（如果尚未加载）
-  try {
-    if (!menuStore.isLoaded) {
-      await menuStore.fetchMenus();
-    }
-  } catch (error) {
-    console.error('[BasicLayout] 菜单加载失败:', error);
-  }
+  // 注意：移除了原来的 menuStore.fetchMenus() 调用
+  // 原因：路由守卫（dynamicRoute middleware）已成为唯一的菜单数据加载入口
+  // 避免重复请求和竞态条件
 });
 </script>
 

@@ -8,7 +8,10 @@
       @scroll="handleScroll"
       @wheel="handleWheelScroll"
     >
-      <div ref="tagsWrapperRef" class="tags-wrapper">
+      <div
+        ref="tagsWrapperRef"
+        class="tags-wrapper"
+      >
         <router-link
           v-for="tag in tags"
           :key="tag.path"
@@ -61,7 +64,10 @@
               </el-icon>
             </el-dropdown-item>
 
-            <el-dropdown-item divided command="closeOther">
+            <el-dropdown-item
+              divided
+              command="closeOther"
+            >
               <el-icon><CircleClose /></el-icon>关闭其他
             </el-dropdown-item>
             <el-dropdown-item command="closeAll">
@@ -80,7 +86,10 @@
         :style="{ left: contextMenuX + 'px', top: contextMenuY + 'px' }"
         @click.stop
       >
-        <div class="context-menu-item" @click="refreshSelectedTag">
+        <div
+          class="context-menu-item"
+          @click="refreshSelectedTag"
+        >
           <el-icon><Refresh /></el-icon>刷新
         </div>
         <div
@@ -90,10 +99,16 @@
         >
           <el-icon><Close /></el-icon>关闭
         </div>
-        <div class="context-menu-item" @click="closeOtherTags">
+        <div
+          class="context-menu-item"
+          @click="closeOtherTags"
+        >
           <el-icon><CircleClose /></el-icon>关闭其他
         </div>
-        <div class="context-menu-item" @click="closeAllTags">
+        <div
+          class="context-menu-item"
+          @click="closeAllTags"
+        >
           <el-icon><Remove /></el-icon>关闭全部
         </div>
       </div>

@@ -4,27 +4,68 @@
       <template #header>
         <div class="card-header">
           <span>字典管理</span>
-          <el-button type="primary" @click="handleAdd">
+          <el-button
+            type="primary"
+            @click="handleAdd"
+          >
             <el-icon><Plus /></el-icon>新增字典
           </el-button>
         </div>
       </template>
 
-      <el-table :data="tableData" v-loading="loading" border stripe>
-        <el-table-column prop="name" label="字典名称" min-width="150" />
-        <el-table-column prop="code" label="字典编码" min-width="120" />
-        <el-table-column prop="description" label="描述" min-width="200" show-overflow-tooltip />
-        <el-table-column prop="status" label="状态" width="100">
+      <el-table
+        v-loading="loading"
+        :data="tableData"
+        border
+        stripe
+      >
+        <el-table-column
+          prop="name"
+          label="字典名称"
+          min-width="150"
+        />
+        <el-table-column
+          prop="code"
+          label="字典编码"
+          min-width="120"
+        />
+        <el-table-column
+          prop="description"
+          label="描述"
+          min-width="200"
+          show-overflow-tooltip
+        />
+        <el-table-column
+          prop="status"
+          label="状态"
+          width="100"
+        >
           <template #default="{ row }">
             <el-tag :type="row.status === 1 ? 'success' : 'danger'">
               {{ row.status === 1 ? '启用' : '禁用' }}
             </el-tag>
           </template>
         </el-table-column>
-        <el-table-column label="操作" width="180" fixed="right">
+        <el-table-column
+          label="操作"
+          width="180"
+          fixed="right"
+        >
           <template #default="{ row }">
-            <el-button link type="primary" @click="handleEdit(row)">编辑</el-button>
-            <el-button link type="danger" @click="handleDelete(row)">删除</el-button>
+            <el-button
+              link
+              type="primary"
+              @click="handleEdit(row)"
+            >
+              编辑
+            </el-button>
+            <el-button
+              link
+              type="danger"
+              @click="handleDelete(row)"
+            >
+              删除
+            </el-button>
           </template>
         </el-table-column>
       </el-table>

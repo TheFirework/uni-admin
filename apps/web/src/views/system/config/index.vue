@@ -4,7 +4,11 @@
       <template #header>
         <div class="card-header">
           <span>系统配置</span>
-          <el-button type="primary" @click="handleSave" :loading="saving">
+          <el-button
+            type="primary"
+            :loading="saving"
+            @click="handleSave"
+          >
             <el-icon><Check /></el-icon>保存配置
           </el-button>
         </div>
@@ -17,21 +21,38 @@
         label-width="140px"
         size="large"
       >
-        <el-divider content-position="left">基础设置</el-divider>
+        <el-divider content-position="left">
+          基础设置
+        </el-divider>
 
-        <el-form-item label="系统名称" prop="siteName">
-          <el-input v-model="formData.siteName" placeholder="请输入系统名称" />
+        <el-form-item
+          label="系统名称"
+          prop="siteName"
+        >
+          <el-input
+            v-model="formData.siteName"
+            placeholder="请输入系统名称"
+          />
         </el-form-item>
 
-        <el-form-item label="系统Logo" prop="logo">
-          <el-input v-model="formData.logo" placeholder="请输入 Logo URL">
+        <el-form-item
+          label="系统Logo"
+          prop="logo"
+        >
+          <el-input
+            v-model="formData.logo"
+            placeholder="请输入 Logo URL"
+          >
             <template #prefix>
               <el-icon><Picture /></el-icon>
             </template>
           </el-input>
         </el-form-item>
 
-        <el-form-item label="系统描述" prop="description">
+        <el-form-item
+          label="系统描述"
+          prop="description"
+        >
           <el-input
             v-model="formData.description"
             type="textarea"
@@ -40,39 +61,92 @@
           />
         </el-form-item>
 
-        <el-divider content-position="left">安全设置</el-divider>
+        <el-divider content-position="left">
+          安全设置
+        </el-divider>
 
-        <el-form-item label="密码最小长度" prop="minPasswordLength">
-          <el-input-number v-model="formData.minPasswordLength" :min="6" :max="20" />
+        <el-form-item
+          label="密码最小长度"
+          prop="minPasswordLength"
+        >
+          <el-input-number
+            v-model="formData.minPasswordLength"
+            :min="6"
+            :max="20"
+          />
         </el-form-item>
 
-        <el-form-item label="密码复杂度要求" prop="passwordComplexity">
-          <el-select v-model="formData.passwordComplexity" placeholder="请选择">
-            <el-option label="仅长度校验" value="length" />
-            <el-option label="包含数字" value="number" />
-            <el-option label="包含大小写字母" value="case" />
-            <el-option label="包含特殊字符" value="special" />
-            <el-option label="混合校验（推荐）" value="mixed" />
+        <el-form-item
+          label="密码复杂度要求"
+          prop="passwordComplexity"
+        >
+          <el-select
+            v-model="formData.passwordComplexity"
+            placeholder="请选择"
+          >
+            <el-option
+              label="仅长度校验"
+              value="length"
+            />
+            <el-option
+              label="包含数字"
+              value="number"
+            />
+            <el-option
+              label="包含大小写字母"
+              value="case"
+            />
+            <el-option
+              label="包含特殊字符"
+              value="special"
+            />
+            <el-option
+              label="混合校验（推荐）"
+              value="mixed"
+            />
           </el-select>
         </el-form-item>
 
-        <el-form-item label="登录失败锁定次数" prop="lockoutThreshold">
-          <el-input-number v-model="formData.lockoutThreshold" :min="3" :max="10" />
-          <div class="form-tip">超过此次数后账号将被临时锁定</div>
+        <el-form-item
+          label="登录失败锁定次数"
+          prop="lockoutThreshold"
+        >
+          <el-input-number
+            v-model="formData.lockoutThreshold"
+            :min="3"
+            :max="10"
+          />
+          <div class="form-tip">
+            超过此次数后账号将被临时锁定
+          </div>
         </el-form-item>
 
-        <el-divider content-position="left">功能开关</el-divider>
+        <el-divider content-position="left">
+          功能开关
+        </el-divider>
 
         <el-form-item label="启用注册">
-          <el-switch v-model="formData.enableRegistration" active-text="开启" inactive-text="关闭" />
+          <el-switch
+            v-model="formData.enableRegistration"
+            active-text="开启"
+            inactive-text="关闭"
+          />
         </el-form-item>
 
         <el-form-item label="启用验证码">
-          <el-switch v-model="formData.enableCaptcha" active-text="开启" inactive-text="关闭" />
+          <el-switch
+            v-model="formData.enableCaptcha"
+            active-text="开启"
+            inactive-text="关闭"
+          />
         </el-form-item>
 
         <el-form-item label="操作日志记录">
-          <el-switch v-model="formData.enableOperationLog" active-text="开启" inactive-text="关闭" />
+          <el-switch
+            v-model="formData.enableOperationLog"
+            active-text="开启"
+            inactive-text="关闭"
+          />
         </el-form-item>
       </el-form>
     </el-card>

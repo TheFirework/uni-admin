@@ -1,7 +1,14 @@
 <template>
   <!-- 条件渲染：登录页独立显示，其他页面包裹 BasicLayout -->
   <div id="app">
-    <router-view v-slot="{ Component, route }">
+    <!-- 全屏 Loading 层（刷新/首访时显示） -->
+    <PageLoading v-if="appStore.actualIsFullLoading" />
+
+    <!-- 正常应用内容 -->
+    <router-view
+      v-else
+      v-slot="{ Component, route }"
+    >
       <transition
         name="fade"
         mode="out-in"
@@ -15,6 +22,11 @@
 <script setup lang="ts">
 import { markRaw, type Component } from 'vue';
 import BasicLayout from '@/layouts/BasicLayout.vue';
+import PageLoading from '@/components/PageLoading.vue';
+import { useAppStore } from '@/stores/app.store';
+
+// 获取全局应用状态 Store
+const appStore = useAppStore();
 
 /**
  * 根据路由决定使用哪种布局

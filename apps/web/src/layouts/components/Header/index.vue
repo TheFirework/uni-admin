@@ -5,7 +5,10 @@
       <!-- 左侧区域：折叠按钮 + 面包屑 -->
       <div class="navbar-left">
         <!-- 折叠/展开按钮 -->
-        <div class="hamburger-container" @click="toggleSidebar">
+        <div
+          class="hamburger-container"
+          @click="toggleSidebar"
+        >
           <el-icon :size="20">
             <Fold v-if="!isCollapsed" />
             <Expand v-else />
@@ -19,8 +22,14 @@
       <!-- 右侧操作区 -->
       <div class="navbar-right">
         <!-- 头像按钮（点击打开抽屉） -->
-        <div class="avatar-wrapper" @click="drawerVisible = true">
-          <el-avatar :size="32" :src="userAvatar" />
+        <div
+          class="avatar-wrapper"
+          @click="drawerVisible = true"
+        >
+          <el-avatar
+            :size="32"
+            :src="userAvatar"
+          />
           <span class="username">{{ username }}</span>
         </div>
 

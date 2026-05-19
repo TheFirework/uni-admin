@@ -40,7 +40,7 @@ export async function diagnoseWorkbenchRoute() {
     if (workbenchRoute.children?.length > 0) {
       console.log(`   子路由列表:`);
       workbenchRoute.children.forEach((c, i) => {
-        console.log(`   ${i + 1}. ${c.name} ("${c.path}") - 组件: ${!!c.component ? '✅' : '❌'}`);
+        console.log(`   ${i + 1}. ${c.name} ("${c.path}") - 组件: ${c.component ? '✅' : '❌'}`);
       });
     }
   } else {

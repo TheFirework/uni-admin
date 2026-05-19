@@ -18,6 +18,7 @@
  */
 
 import { useMenuStore } from '@/stores/menu.store';
+import { useAppStore } from '@/stores/app.store';
 import { RoutePaths } from '@/config/route-paths';
 import type { RouterGuardContext, RequestLock } from '../types';
 import { createMiddleware } from '../middleware';
@@ -26,7 +27,7 @@ import { nextTick } from 'vue';
 const MAX_RETRY_COUNT = 3;
 const COOLDOWN_TIME = 5000;
 
-let requestLock: RequestLock = {
+const requestLock: RequestLock = {
   isFetching: false,
   fetchPromise: null,
   lastFetchTime: 0,
@@ -36,6 +37,7 @@ let requestLock: RequestLock = {
 export const dynamicRouteMiddleware = createMiddleware('dynamicRoute', async (context, next) => {
   const { to, router, next: navigate } = context;
   const menuStore = useMenuStore();
+  const appStore = useAppStore();
 
   console.log(`[Middleware:dynamicRoute] 检查动态路由状态, isLoaded: ${menuStore.isLoaded}, routes: ${menuStore.routes.length}, target: ${to.path}`);
 
@@ -90,6 +92,10 @@ export const dynamicRouteMiddleware = createMiddleware('dynamicRoute', async (co
 
   console.log('[Middleware:dynamicRoute] 开始加载动态路由（force mode）...');
 
+  // 设置 Loading 状态（在 fetchMenus 之前）
+  appStore.setFullLoading(true);
+  appStore.setRouteLoading(true);
+
   requestLock.isFetching = true;
   requestLock.lastFetchTime = Date.now();
 
@@ -105,6 +111,10 @@ export const dynamicRouteMiddleware = createMiddleware('dynamicRoute', async (co
         menuStore.routes.map((r) => `${r.path} (${r.name})`).join(', ')
       );
 
+      // 清除 Loading 状态（加载成功后）
+      appStore.setFullLoading(false);
+      appStore.setRouteLoading(false);
+
       // 等待 Vue Router 处理完 addRoute 更新
       await nextTick();
     })
@@ -112,6 +122,10 @@ export const dynamicRouteMiddleware = createMiddleware('dynamicRoute', async (co
       requestLock.isFetching = false;
       requestLock.errorCount += 1;
       requestLock.fetchPromise = null;
+
+      // 清除 Loading 状态（加载失败时，确保不卡在 Loading 界面）
+      appStore.setFullLoading(false);
+      appStore.setRouteLoading(false);
 
       console.error(`[Middleware:dynamicRoute] ❌ 加载失败 (${requestLock.errorCount}/${MAX_RETRY_COUNT}):`, error);
       throw error;
@@ -150,6 +164,10 @@ export const dynamicRouteMiddleware = createMiddleware('dynamicRoute', async (co
       context.aborted = true;
     }
   } catch (error) {
+    // 清除 Loading 状态（异常时确保清理，避免 UI 卡死）
+    appStore.setFullLoading(false);
+    appStore.setRouteLoading(false);
+
     const err = error as Error;
     const isAuthError = err.message?.includes('401') || err.message?.includes('Unauthorized');
 
