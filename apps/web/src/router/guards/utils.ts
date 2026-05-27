@@ -80,6 +80,16 @@ export async function syncTokenToHttpClient(): Promise<void> {
     await storage.set(StorageKeys.HTTP_TOKEN, token, {
       namespace: StorageNamespaces.HTTP_CLIENT,
     });
+
+    // 同时写入原生 localStorage 的 'access_token' key
+    // 因为 TokenManager 直接从 localStorage.getItem('access_token') 读取
+    // 而 storage 工具类会添加 'ua:http_client:' 前缀导致位置不一致
+    try {
+      localStorage.setItem('access_token', token);
+    } catch {
+      // 静默失败
+    }
+
     console.log('[syncToken] ✓ Token 已同步到 HTTP 客户端');
   } catch (error) {
     console.error('[syncToken] Token 同步失败:', error);

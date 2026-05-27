@@ -1,34 +1,50 @@
 export interface DictItem {
-  id: string;
-  label: string;
-  value: string;
-  type: string;
+  dictLabel: string;
+  dictValue: string;
+  tagType?: string;
   sort: number;
-  status: number;
 }
 
-/**
- * 菜单项数据传输对象（DTO）
- * 后端返回的菜单数据结构，用于动态路由生成
- */
+export interface DictDataType {
+  id: number;
+  dictCode: string;
+  dictLabel: string;
+  dictValue: string;
+  tagType?: string;
+  sort: number;
+  status: number;
+  remark?: string;
+}
+
+export interface DictTypeItem {
+  id: number;
+  dictCode: string;
+  dictName: string;
+  status: number;
+  isSystem: number;
+  remark?: string;
+  createdAt: string;
+  updatedAt: string;
+}
+
 export interface MenuDTO {
-  id: string;                      // 菜单唯一标识
-  name: string;                    // 路由名称（唯一标识）
-  path: string;                    // 路由路径（相对于父级）
-  component: string;               // 组件路径: 'system/user/index' 或特殊值 'Layout'
-  redirect?: string;               // 父路由重定向
+  id: string;
+  name: string;
+  path: string;
+  component?: string;
+  redirect?: string;
   meta: {
-    title: string;                 // 菜单标题
-    icon?: string;                 // Iconify 图标名: 'mdi:account-group'
-    hidden?: boolean;              // 不在侧边栏显示
-    affix?: boolean;               // 固定标签(不可关闭)
-    noCache?: boolean;             // 不缓存(keep-alive exclude)
-    externalLink?: string;         // 外部链接(新窗口打开)
-    roles?: string[];              // 允许访问的角色列表
-    [key: string]: unknown;        // 扩展字段
+    title: string;
+    icon?: string;
+    hidden?: boolean;
+    affix?: boolean;
+    noCache?: boolean;
+    externalLink?: string;
+    roles?: string[];
+    [key: string]: unknown;
   };
-  sort: number;                    // 排序权重
-  children?: MenuDTO[];            // 子菜单 (无限层级)
+  sort: number;
+  children?: MenuDTO[];
 }
 
 import type { HttpClient } from '@uni-admin/request';
@@ -38,36 +54,102 @@ let api: HttpClient;
 async function getApi(): Promise<HttpClient> {
   if (!api) {
     const mod = await import('@/lib/request/instances/default.js');
-    api = mod.default; // 使用默认导出
+    api = mod.default;
   }
   return api;
 }
 
-/** 获取字典列表 */
-export async function getDictList(type: string): Promise<DictItem[]> {
-  const instance = await getApi();
-  return instance.get(`/system/dict/${type}`);
+// ====== 字典类型管理接口 ======
+
+export interface PaginatedResult<T> {
+  list: T[];
+  total: number;
 }
 
-/** 
- * 获取当前用户的菜单树
- * 返回完整的菜单树结构（根据用户角色过滤），用于动态路由生成
- *
- * API 响应格式说明：
- *   后端返回标准包装格式 { success, code, message, data }
- *   其中 data 字段可能再次包含 { code, message, data } 结构
- *   实际菜单数组位于 response.data.data（两层嵌套）
- *
- * 本函数自动解包，直接返回 MenuDTO[]
- */
+export async function getDictTypeList(params?: {
+  keyword?: string;
+  status?: number;
+  page?: number;
+  pageSize?: number;
+}): Promise<PaginatedResult<DictTypeItem>> {
+  const instance = await getApi();
+  return instance.get('/system/dict/type/list', { params });
+}
+
+export async function createDictType(data: { dictCode: string; dictName: string; remark?: string; status?: number; isSystem?: number }) {
+  const instance = await getApi();
+  return instance.post('/system/dict/type', data);
+}
+
+export async function updateDictType(id: number, data: { dictName?: string; remark?: string; status?: number }) {
+  const instance = await getApi();
+  return instance.put(`/system/dict/type/${id}`, data);
+}
+
+export async function deleteDictType(id: number) {
+  const instance = await getApi();
+  return instance.delete(`/system/dict/type/${id}`);
+}
+
+export async function toggleDictTypeStatus(id: number, status: number) {
+  const instance = await getApi();
+  return instance.put(`/system/dict/type/${id}/status`, { status });
+}
+
+// ====== 字典数据管理接口 ======
+
+export async function getDictDataList(params?: { dictCode?: string; status?: number }): Promise<DictDataType[]> {
+  const instance = await getApi();
+  return instance.get('/system/dict/data/list', { params });
+}
+
+export async function createDictData(data: {
+  dictCode: string; dictLabel: string; dictValue: string;
+  tagType?: string; sort?: number; status?: number; remark?: string;
+}) {
+  const instance = await getApi();
+  return instance.post('/system/dict/data', data);
+}
+
+export async function updateDictData(id: number, data: {
+  dictLabel?: string; dictValue?: string; tagType?: string;
+  sort?: number; status?: number; remark?: string;
+}) {
+  const instance = await getApi();
+  return instance.put(`/system/dict/data/${id}`, data);
+}
+
+export async function deleteDictData(id: number) {
+  const instance = await getApi();
+  return instance.delete(`/system/dict/data/${id}`);
+}
+
+// ====== 公开查询接口 ======
+
+/** 按编码查询字典项（带缓存） */
+export async function getDictItems(dictCode: string): Promise<DictItem[]> {
+  const instance = await getApi();
+  return instance.get(`/public/dict/${dictCode}`);
+}
+
+/** 按编码+值翻译为标签 */
+export async function getDictLabel(code: string, value: string): Promise<string> {
+  const instance = await getApi();
+  return instance.get(`/public/dict/${code}/${value}`);
+}
+
+/** 批量查询多个字典 */
+export async function getDictBatch(codes: string[]): Promise<Record<string, DictItem[]>> {
+  const instance = await getApi();
+  return instance.get('/public/dict/batch', { params: { codes: codes.join(',') } });
+}
+
+// ====== 菜单接口 ======
+
 export async function getMenus(): Promise<MenuDTO[]> {
   const instance = await getApi();
   const response = await instance.get('/system/menus');
 
-  // 处理多层 data 包装：response.data.data → MenuDTO[]
-  // 兼容两种返回格式：
-  //   格式1: { success, code, data: MenuDTO[] } (单层)
-  //   格式2: { success, code, data: { code, data: MenuDTO[] } } (双层)
   if (Array.isArray(response)) {
     return response as unknown as MenuDTO[];
   }

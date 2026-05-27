@@ -7,6 +7,7 @@ import { LoggerService } from './common/logger/logger.service.js';
 import { RedisCacheService } from './common/cache/redis-cache.service.js';
 import { AuthModule } from './modules/auth/auth.module.js';
 import { MenuModule } from './modules/menu/menu.module.js';
+import { DictionaryModule } from './modules/dictionary/dictionary.module.js';
 import { validationSchema } from './config/env.validation.js';
 import { getConfig } from './config/env.config.js';
 
@@ -104,6 +105,8 @@ import { getConfig } from './config/env.config.js';
     AuthModule,
     // 注册菜单模块（提供 /api/v1/system/menus 路由菜单 API）
     MenuModule,
+    // 注册字典模块（提供字典类型/数据管理 + 公开查询 API）
+    DictionaryModule,
   ],
   controllers: [AppController],
   providers: [

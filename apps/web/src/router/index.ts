@@ -19,9 +19,17 @@ const publicRoutes: RouteRecordRaw[] = [
 ];
 
 // 受保护路由（需要认证，包裹在 BasicLayout 中）
-// 注意：不再预定义静态路由，完全由动态路由系统控制
-// 动态路由会在应用启动后通过 menu.store.ts 从后端加载并注册
-const protectedRoutes: RouteRecordRaw[] = [];
+// redirect 中间页必须作为 BasicLayout 子路由注册
+// 这样导航在 Layout 内部完成，keep-alive 能正确清除/重建缓存
+const protectedRoutes: RouteRecordRaw[] = [
+  // 刷新中间页：访问 /redirect/xxx 会立即 replace 到 /xxx，触发组件重建
+  {
+    path: '/redirect/:path(.*)*',
+    name: 'Redirect',
+    component: () => import('@/layouts/components/RedirectView/index.vue'),
+    meta: { hidden: true },
+  },
+];
 
 // 路由配置
 const router = createRouter({

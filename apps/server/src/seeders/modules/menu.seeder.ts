@@ -72,6 +72,7 @@ const CHILD_MENUS = [
   { parentName: 'System', name: 'UserManagement', path: 'user', component: 'system/user/index', routeName: 'UserManagement', title: '用户管理', icon: 'mdi:account-group', permission: JSON.stringify(['admin', 'system:user:list']), sort: 1 },
   { parentName: 'System', name: 'RoleManagement', path: 'role', component: 'system/role/index', routeName: 'RoleManagement', title: '角色管理', icon: 'mdi:shield-account', permission: JSON.stringify(['admin']), sort: 2 },
   { parentName: 'System', name: 'MenuManagement', path: 'menu', component: 'system/menu/index', routeName: 'MenuManagement', title: '菜单管理', icon: 'mdi:menu', permission: JSON.stringify(['admin']), sort: 3 },
+  { parentName: 'System', name: 'DictionaryManagement', path: 'dictionary', component: 'system/dictionary/index', routeName: 'DictionaryManagement', title: '字典管理', icon: 'mdi:book-open-variant', permission: JSON.stringify(['admin']), sort: 4 },
 
   // 组件演示子菜单
   { parentName: 'Components', name: 'ComponentDemo', path: 'demo', component: 'components/demo/index', routeName: 'ComponentDemo', title: '组件说明', icon: 'mdi:file-document-outline', sort: 0 },

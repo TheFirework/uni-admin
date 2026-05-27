@@ -1,5 +1,27 @@
 <template>
   <div class="tags-view-container">
+    <!-- 左侧导航快捷按钮组 -->
+    <div class="tags-nav-buttons">
+      <el-tooltip content="后退" placement="bottom" :show-after="300">
+        <div class="nav-btn" @click="handleNavBack">
+          <el-icon :size="14"><ArrowLeft /></el-icon>
+        </div>
+      </el-tooltip>
+      <el-tooltip content="刷新" placement="bottom" :show-after="300">
+        <div class="nav-btn" @click="handleNavRefresh">
+          <el-icon :size="14"><Refresh /></el-icon>
+        </div>
+      </el-tooltip>
+      <el-tooltip content="首页" placement="bottom" :show-after="300">
+        <div class="nav-btn" @click="handleNavHome">
+          <el-icon :size="14"><HomeFilled /></el-icon>
+        </div>
+      </el-tooltip>
+    </div>
+
+    <!-- 分隔线 -->
+    <div class="tags-nav-divider"></div>
+
     <!-- 标签滚动容器 -->
     <el-scrollbar
       ref="scrollbarRef"
@@ -12,25 +34,30 @@
         ref="tagsWrapperRef"
         class="tags-wrapper"
       >
-        <router-link
-          v-for="tag in tags"
-          :key="tag.path"
-          :ref="(el) => setTagRef(el, tag)"
-          :to="{ path: tag.path, query: tag.query }"
-          class="tags-view-item"
-          :class="{ 'is-active': isActive(tag) }"
-          @contextmenu.prevent="openContextMenu($event, tag)"
-        >
-          <span class="tag-title">{{ tag.title }}</span>
-
-          <el-icon
-            v-if="!tag.affix"
-            class="tag-close"
-            @click.prevent.stop="handleClose(tag)"
+        <template v-for="(tag, index) in tags" :key="tag.path">
+          <router-link
+            :ref="(el) => setTagRef(el, tag)"
+            :to="{ path: tag.path, query: tag.query }"
+            class="tags-view-item"
+            :class="{ 'is-active': isActive(tag) }"
+            @contextmenu.prevent="openContextMenu($event, tag)"
           >
-            <Close />
-          </el-icon>
-        </router-link>
+            <span class="tag-title">{{ tag.title }}</span>
+
+            <el-icon
+              v-if="!tag.affix"
+              class="tag-close"
+              @click.prevent.stop="handleClose(tag)"
+            >
+              <Close />
+            </el-icon>
+          </router-link>
+          <!-- 标签间竖线分隔符（最后一个标签后不显示） -->
+          <span
+            v-if="index < tags.length - 1"
+            class="tag-separator"
+          >|</span>
+        </template>
       </div>
     </el-scrollbar>
 
@@ -119,7 +146,7 @@
 <script setup lang="ts">
 import { ref, computed, watch, nextTick, onMounted, onBeforeUnmount } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
-import { Close, Refresh, CircleClose, Remove, ArrowDown } from '@element-plus/icons-vue';
+import { Close, Refresh, CircleClose, Remove, ArrowDown, ArrowLeft, HomeFilled } from '@element-plus/icons-vue';
 import { useTagsStore } from '@/stores/tags.store';
 import type { TagView } from '@/stores/tags.store';
 
@@ -185,6 +212,7 @@ function refreshSelectedTag(): void {
   const { path, query } = selectedTag.value;
   closeContextMenu();
 
+  // 与 handleNavRefresh 相同：通过 redirect 中间页清除缓存后重建
   router.replace({
     path: '/redirect' + path,
     query,
@@ -237,6 +265,39 @@ function handleDropdownCommand(command: any): void {
     case 'closeAll':
       closeAllTags();
       break;
+  }
+}
+
+// ====== 导航快捷按钮 ======
+
+/**
+ * 后退按钮：导航至上一页面
+ */
+function handleNavBack(): void {
+  router.back();
+}
+
+/**
+ * 刷新按钮：通过 redirect 中间页清除 keep-alive 缓存后重建组件
+ * 流程：replace 到 /redirect/xxx → 离开当前路由(缓存销毁) → redirect 组件 replace 回目标路径
+ */
+function handleNavRefresh(): void {
+  const { path, query } = route;
+  router.replace({
+    path: '/redirect' + path,
+    query,
+  });
+}
+
+/**
+ * 首页按钮：导航至首页（第一个 affix 标签或根路径）
+ */
+function handleNavHome(): void {
+  const firstAffixTag = tagsStore.tags.find((tag) => tag.affix);
+  if (firstAffixTag) {
+    router.push({ path: firstAffixTag.path });
+  } else {
+    router.push('/');
   }
 }
 
@@ -355,6 +416,40 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid #d8dce5;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
 
+  // 左侧导航快捷按钮组
+  .tags-nav-buttons {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-shrink: 0;
+    padding: 0 10px;
+
+    .nav-btn {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      width: 24px;
+      height: 24px;
+      border-radius: 4px;
+      cursor: pointer;
+      color: #5a5e66;
+      transition: all 0.2s ease;
+
+      &:hover {
+        color: #409eff;
+        background-color: #f5f7fa;
+      }
+    }
+  }
+
+  // 导航按钮与标签区域之间的分隔线
+  .tags-nav-divider {
+    width: 1px;
+    height: 16px;
+    background-color: #dcdfe6;
+    flex-shrink: 0;
+  }
+
   .tags-scroll-container {
     flex: 1;
     height: 100%;
@@ -397,19 +492,15 @@ onBeforeUnmount(() => {
     flex-shrink: 0;
 
     .tags-view-item {
-      position: relative;
       display: inline-flex;
       align-items: center;
       gap: 4px;
-      padding: 0 10px;
-      margin-right: 6px;
+      padding: 0 12px;
       height: 26px;
       line-height: 26px;
       font-size: 12px;
       color: #495060;
-      background-color: #fff;
-      border: 1px solid #d8dce5;
-      border-radius: 3px;
+      background-color: transparent;
       text-decoration: none;
       cursor: pointer;
       transition: all 0.3s ease;
@@ -417,7 +508,6 @@ onBeforeUnmount(() => {
 
       &:hover {
         color: #409eff;
-        border-color: #409eff;
 
         .tag-close {
           opacity: 1;
@@ -425,24 +515,13 @@ onBeforeUnmount(() => {
       }
 
       &.is-active {
-        background-color: #ecf5ff;
+        background-color: #e6f0ff;
         color: #409eff;
-        border-color: #409eff;
-
-        &:before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          width: 100%;
-          height: 2px;
-          background-color: #409eff;
-          border-radius: 3px 3px 0 0;
-        }
+        border-radius: 4px;
 
         .tag-close {
           opacity: 1;
-          color: #409eff;
+          color: inherit;
         }
       }
 
@@ -461,9 +540,21 @@ onBeforeUnmount(() => {
         transition: all 0.3s ease;
 
         &:hover {
-          background-color: rgba(255, 255, 255, 0.3);
+          background-color: rgba(64, 158, 255, 0.2);
         }
       }
+    }
+
+    // 标签间竖线分隔符
+    .tag-separator {
+      display: inline-flex;
+      align-items: center;
+      color: #dcdfe6;
+      font-size: 12px;
+      padding: 0 2px;
+      flex-shrink: 0;
+      pointer-events: none;
+      user-select: none;
     }
   }
 

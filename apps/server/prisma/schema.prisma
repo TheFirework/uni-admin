@@ -67,17 +67,50 @@ model Menu {
   @@map("menus")
 }
 
-// 字典模型
-model Dictionary {
+// 字典类型主表
+model SysDictType {
   id        Int      @id @default(autoincrement())
-  type      String   @map("type") @db.VarChar(50)
-  label     String   @map("label") @db.VarChar(100)
-  value     String   @map("value") @db.VarChar(255)
+  dictCode  String   @unique @map("dict_code") @db.VarChar(100)
+  dictName  String   @map("dict_name") @db.VarChar(100)
+  status    Int      @default(1) @map("status")
+  isSystem  Int      @default(0) @map("is_system")
+  remark    String?  @map("remark") @db.Text
+  createBy  String?  @map("create_by") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updateBy  String?  @map("update_by") @db.VarChar(50)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isDeleted Int      @default(0) @map("is_deleted")
+
+  dictData  SysDictData[]
+
+  @@index([dictCode])
+  @@index([status])
+  @@index([isDeleted])
+  @@map("sys_dict_type")
+}
+
+// 字典数据从表
+model SysDictData {
+  id        Int      @id @default(autoincrement())
+  dictCode  String   @map("dict_code") @db.VarChar(100)
+  dictLabel String   @map("dict_label") @db.VarChar(100)
+  dictValue String   @map("dict_value") @db.VarChar(255)
+  tagType   String?  @map("tag_type") @db.VarChar(20)
   sort      Int      @default(0) @map("sort")
   status    Int      @default(1) @map("status")
   remark    String?  @map("remark") @db.Text
+  createBy  String?  @map("create_by") @db.VarChar(50)
+  createdAt DateTime @default(now()) @map("created_at")
+  updateBy  String?  @map("update_by") @db.VarChar(50)
+  updatedAt DateTime @updatedAt @map("updated_at")
+  isDeleted Int      @default(0) @map("is_deleted")
 
-  @@map("dictionary")
+  dictType  SysDictType @relation(fields: [dictCode], references: [dictCode])
+
+  @@index([dictCode])
+  @@index([status])
+  @@index([isDeleted])
+  @@map("sys_dict_data")
 }
 
 // 系统配置模型
